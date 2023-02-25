@@ -1,0 +1,9 @@
+project(utils_unit_tests)
+add_subdirectory(deps/catch2)
+
+file(GLOB utils_test_sources "./*.cpp")
+add_executable(utils_tests ${utils_test_sources})
+set_property(TARGET utils_tests PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+ 
+target_include_directories(utils_tests PUBLIC ../include)
+target_link_libraries(utils_tests PRIVATE Catch2::Catch2WithMain utils)

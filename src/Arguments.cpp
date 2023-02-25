@@ -12,7 +12,6 @@ namespace utils {
 
         if (argc == 0) return;
         m_path = argv[0];
-        //Engine::Get()->log(LogCode::program_path, argv[0]);
         String argStr = "";
         for (u32 i = 1;i < argc;i++) {
             if (i > 1) argStr += ' ';
@@ -28,11 +27,9 @@ namespace utils {
             if (arg.size() == 2) {
                 String val = arg[1].trim();
                 m_args[arg[0]] = val;
-                //Engine::Get()->log(LogCode::program_argument, arg[0].c_str(), val.c_str());
             }
             else {
                 m_args[arg[0]] = "";
-                //Engine::Get()->log(LogCode::program_argument, arg[0].c_str(), "");
             }
         }
     }
