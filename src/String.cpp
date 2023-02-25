@@ -17,13 +17,13 @@ namespace utils {
     }
 
     String::String(const char* str) : m_data(nullptr), m_len(u32(strlen(str))), m_capacity(m_len), m_readOnly(false) {
-        m_data = (char*)Allocator::Get()->alloc(m_capacity + u64(1));
+        m_data = (char*)Mem::alloc(m_capacity + u64(1));
         memcpy(m_data, str, m_len);
         m_data[m_len] = 0;
     }
 
     String::String(const std::string& str) : m_data(nullptr), m_len(u32(str.size())), m_capacity(m_len), m_readOnly(false) {
-        m_data = (char*)Allocator::Get()->alloc(m_capacity + u64(1));
+        m_data = (char*)Mem::alloc(m_capacity + u64(1));
         memcpy(m_data, str.c_str(), str.length());
         m_data[m_len] = 0;
     }
@@ -35,20 +35,22 @@ namespace utils {
             m_len = str.m_len;
             m_readOnly = str.m_readOnly;
         } else {
-            m_data = (char*)Allocator::Get()->alloc(m_capacity + u64(1));
+            m_data = (char*)Mem::alloc(m_capacity + u64(1));
             memcpy(m_data, str.c_str(), str.size());
             m_data[m_len] = 0;
         }
     }
 
     String::String(char* str, u32 len) : m_data(nullptr), m_len(len), m_capacity(len), m_readOnly(false) {
-        m_data = (char*)Allocator::Get()->alloc(m_capacity + u32(1));
+        m_data = (char*)Mem::alloc(m_capacity + u32(1));
         memcpy(m_data, str, len);
         m_data[m_len] = 0;
     }
 
+    String::String(void* str, u32 len) : String((char*)str, len) { }
+    
     String::~String() {
-        if (m_data && !m_readOnly) Allocator::Get()->free(m_data);
+        if (m_data && !m_readOnly) Mem::free(m_data);
         m_data = nullptr;
     }
 
@@ -64,6 +66,18 @@ namespace utils {
         return m_data[idx];
     }
     
+    inline const char* String::c_str() const {
+        return m_data;
+    }
+
+    inline String::operator std::string() const {
+        return std::string(m_data, m_len);
+    }
+
+    inline String::operator void*() const {
+        return m_data;
+    }
+
     String& String::operator =(const char* rhs) {
         if (m_readOnly) {
             throw std::exception("Attempted to modify read-only string");
@@ -215,7 +229,7 @@ namespace utils {
             tmp.m_data[tmp.m_len++] = m_data[i];
         }
 
-        Allocator::Get()->free(m_data);
+        Mem::free(m_data);
         m_data = tmp.m_data;
         m_len = tmp.m_len;
         m_capacity = tmp.m_capacity;
@@ -252,7 +266,7 @@ namespace utils {
             tmp.m_data[tmp.m_len++] = m_data[i];
         }
 
-        Allocator::Get()->free(m_data);
+        Mem::free(m_data);
         m_data = tmp.m_data;
         m_len = tmp.m_len;
         m_capacity = tmp.m_capacity;
@@ -605,10 +619,10 @@ namespace utils {
         }
 
         m_capacity = cap;
-        char* data = (char*)Allocator::Get()->alloc(cap);
+        char* data = (char*)Mem::alloc(cap);
         if (m_len < m_capacity) memset(data + m_len, 0, m_capacity - m_len);
         if (m_len) memcpy(data, m_data, m_len);
-        if (m_data) Allocator::Get()->free(m_data);
+        if (m_data) Mem::free(m_data);
         m_data = data;
     }
 

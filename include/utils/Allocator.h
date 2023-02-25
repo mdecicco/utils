@@ -14,25 +14,15 @@ namespace utils {
             virtual ~IAllocator();
 
             T* alloc(size_t count = 1);
-
             T* realloc(T* ptr, size_t count);
-
             size_t free(T* ptr);
-
             size_t reset();
-
             void copy(T* to, const T* from, size_t count);
-
             size_t elemSize() const;
-
             size_t memUsed() const;
-
             virtual size_t totalCapacityBytes() = 0;
-
             virtual size_t maxAllocationSize() = 0;
-
             virtual bool isDynamicallySized() = 0;
-
             virtual size_t getPtrSize(void* ptr) = 0;
 
         protected:
@@ -66,26 +56,18 @@ namespace utils {
              *     Whether or not to initialize memory that gets allocated to zero. (default = false)
              */
             FixedAllocator(size_t elementCapacity, size_t maxLiveAllocations = 0, bool zeroMem = false);
-
             ~FixedAllocator();
 
             virtual size_t totalCapacityBytes();
-
             virtual size_t maxAllocationSize();
-
             virtual bool isDynamicallySized();
-
             virtual size_t getPtrSize(void* ptr);
 
         protected:
             virtual void* allocInternal(size_t count);
-
             virtual size_t freeInternal(void* ptr);
-
             virtual size_t resetInternal();
-
             elem_node* getEmptyNode();
-
             void releaseNode(elem_node* node);
 
             bool m_doZeroMem;
@@ -108,22 +90,13 @@ namespace utils {
     class PagedAllocator : public IAllocator<T> {
         static_assert(std::is_base_of_v<IAllocator<T>, PageAllocatorTp>, "PageAllocatorTp template argument should be inherited from IAllocator");
         public:
-            /*
-            * @param args...
-            *     Argument list matches the argument list for the constructor of PageAllocatorTp.
-            *     By default this is FixedAllocator<T>.
-            */
-            template <typename ...Args>
-            PagedAllocator(Args&& ...args);
+            template <typename F>
+            PagedAllocator(F&& creatorFunc);
 
             virtual ~PagedAllocator();
-
             virtual size_t totalCapacityBytes();
-
             virtual size_t maxAllocationSize();
-
             virtual bool isDynamicallySized();
-
             virtual size_t getPtrSize(void* ptr);
 
         protected:
@@ -133,14 +106,12 @@ namespace utils {
             };
 
             virtual void* allocInternal(size_t count);
-
             virtual size_t freeInternal(void* ptr);
-
             virtual size_t resetInternal();
 
             // Hash map of pointer -> PageAllocatorTp*
             robin_hood::unordered_map<void*, PageAllocatorTp*> m_allocMap;
-            std::function<page_node*()> m_newPageFunc;
+            std::function<PageAllocatorTp*()> m_newPageFunc;
             page_node* m_pages;
             u16 m_pageCount;
     };
@@ -149,20 +120,14 @@ namespace utils {
         public:
             GeneralAllocator();
             virtual ~GeneralAllocator();
-
             virtual size_t totalCapacityBytes();
-
             virtual size_t maxAllocationSize();
-
             virtual bool isDynamicallySized();
-
             virtual size_t getPtrSize(void* ptr);
 
         protected:
             virtual void* allocInternal(size_t count);
-
             virtual size_t freeInternal(void* ptr);
-
             virtual size_t resetInternal();
     };
 
@@ -171,31 +136,21 @@ namespace utils {
         static_assert(std::is_base_of_v<IAllocator<T>, AllocatorTp>, "AllocatorTp template argument should be inherited from IAllocator");
         public:
             static T* alloc(size_t sz);
-
             static T* realloc(T* ptr, size_t sz);
-
             static size_t free(T* ptr);
-
             static void copy(T* to, const T* from, size_t count);
-
             virtual size_t totalCapacityBytes();
-
             virtual size_t maxAllocationSize();
-
             virtual bool isDynamicallySized();
-
             virtual size_t getPtrSize(void* ptr);
 
         protected:
             virtual void* allocInternal(size_t count);
-
             virtual size_t freeInternal(void* ptr);
-
             virtual size_t resetInternal();
 
         private:
             PerThreadSingletonAllocator();
-
             virtual ~PerThreadSingletonAllocator();
     };
 

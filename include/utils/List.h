@@ -201,6 +201,7 @@ namespace utils {
             std::enable_if_t<std::is_invocable_r_v<bool, F, T, T>, BidirectionalList<T>> sorted(F&& cb) const;
 
         protected:
+            static FixedAllocator<BidirectionalListNode<T>>* allocatorPageGenerator();
             Allocator m_allocator;
             Node m_front;
             Node m_back;

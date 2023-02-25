@@ -1,10 +1,7 @@
 #pragma once
-#include <utils/Types.h>
+#include <utils/types.h>
 #include <utils/robin_hood.h>
 
-// todo: fix gjs::TransientFunction so std::function isn't needed here
-// note: The problem is that 'Args ...args' becomes garbage in the wrapped
-//       lambda once 'Create' returns
 #include <functional>
 
 namespace utils {
@@ -26,8 +23,11 @@ namespace utils {
     template <typename T>
     class PerThreadSingleton {
         public:
-            template <typename ...Args>
-            static void Create(Args&& ...args);
+            template <typename F>
+            static void Create(F&& creatorFunc);
+
+            static std::enable_if_t<std::is_constructible_v<T>>
+            Create();
 
             // Destroys self and all per-thread instances
             static void Destroy();
@@ -37,8 +37,14 @@ namespace utils {
 
             static T* Get();
 
+        protected:
+            virtual ~PerThreadSingleton();
+        
         private:
             static PerThreadSingleton<T>* instance;
+
+            template <typename F>
+            PerThreadSingleton(F&& creatorFunc);
 
             // Hash map of thread id -> PageAllocatorTp*
             robin_hood::unordered_map<thread_id, T*> m_instanceMap;

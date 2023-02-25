@@ -29,22 +29,32 @@ namespace utils {
     PerThreadSingleton<T>* PerThreadSingleton<T>::instance = nullptr;
 
     template <typename T>
-    template <typename ...Args>
-    void PerThreadSingleton<T>::Create(Args&& ...args) {
+    template <typename F>
+    void PerThreadSingleton<T>::Create(F&& creatorFunc) {
         if (instance) return;
-        instance = new PerThreadSingleton<T>();
-        instance->m_newInstanceFunc = [...args = std::forward<Args>(args)]() {
-            return new T(args...);
-        };
+        instance = new PerThreadSingleton<T>(creatorFunc);
+    }
+    
+    template <typename T>
+    std::enable_if_t<std::is_constructible_v<T>>
+    PerThreadSingleton<T>::Create() {
+        if (instance) return;
+        instance = new PerThreadSingleton<T>([](){ return new T(); });
+    }
+
+    template <typename T>
+    template <typename F>
+    PerThreadSingleton<T>::PerThreadSingleton(F&& creatorFunc) : m_newInstanceFunc(creatorFunc) {
+    }
+
+    template <typename T>
+    PerThreadSingleton<T>::~PerThreadSingleton() {
+        for (auto it : m_instanceMap) delete it.second;
     }
 
     template <typename T>
     void PerThreadSingleton<T>::Destroy() {
-        if (instance) {
-            for (auto it : instance->m_instanceMap) delete it.second;
-            delete instance;
-        }
-
+        if (instance) delete instance;
         instance = nullptr;
     }
 

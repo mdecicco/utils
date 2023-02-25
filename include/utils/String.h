@@ -16,31 +16,25 @@ namespace std {
 
 namespace utils {
     template <typename T>
-    class FixedAllocator;
-    template <typename T, typename PageAllocatorTp>
-    class PagedAllocator;
-    template <typename T, typename AllocatorTp>
-    class PerThreadSingletonAllocator;
+    class Array;
 
     class String {
         public:
-            using Allocator = PerThreadSingletonAllocator<char, PagedAllocator<char, FixedAllocator<char>>>;
-
             String();
             String(const char* cstr);
             String(const String& str);
             String(const std::string& str);
             String(char* str, u32 len);
-            String(void* str, u32 len) : String((char*)str, len) { }
+            String(void* str, u32 len);
             ~String();
 
             u32 size() const;
             char& operator[](u32 idx);
             char operator[](u32 idx) const;
 
-            inline const char* c_str() const { return m_data; }
-            inline operator std::string() const { return std::string(m_data, m_len); }
-            inline operator void*() const { return m_data; }
+            inline const char* c_str() const;
+            inline operator std::string() const;
+            inline operator void*() const;
 
             String& operator =(const char* rhs);
             String& operator =(const std::string& rhs);

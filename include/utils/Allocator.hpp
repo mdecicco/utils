@@ -313,17 +313,11 @@ namespace utils {
     // PagedAllocator
     //
 
+    
     template <typename T, typename PageAllocatorTp>
-    template <typename ...Args>
-    PagedAllocator<T, PageAllocatorTp>::PagedAllocator(Args&& ...args)
-        : IAllocator<T>(),
-        m_pages(nullptr),
-        m_pageCount(1)
-    {
-        m_newPageFunc = [this, ...args = std::forward<Args>(args)]() {
-            return new page_node({ new PageAllocatorTp(args...), m_pages });
-        };
-        m_pages = m_newPageFunc();
+    template <typename F>
+    PagedAllocator<T, PageAllocatorTp>::PagedAllocator(F&& creatorFunc) : m_newPageFunc(creatorFunc) {
+        m_pages = new page_node({ m_newPageFunc(), nullptr });
     }
 
     template <typename T, typename PageAllocatorTp>
@@ -373,7 +367,7 @@ namespace utils {
         }
 
         // Try allocating from a new page
-        m_pages = m_newPageFunc();
+        m_pages = new page_node({ m_newPageFunc(), m_pages });
         m_pageCount++;
 
         void* ret = m_pages->allocator->alloc(count);

@@ -139,8 +139,11 @@ namespace utils {
     //
     // ThreadPool
     //
+    FixedAllocator<Job>* sThreadPool::allocatorPageGenerator() {
+        return new FixedAllocator<Job>(512, 512);
+    }
 
-    sThreadPool::sThreadPool() : m_jobAllocator(512, 512) {
+    sThreadPool::sThreadPool() : m_jobAllocator(allocatorPageGenerator) {
         u32 wc = Thread::MaxHardwareThreads();
         m_workers = new Worker[wc];
         for (u32 i = 0;i < wc;i++) m_workers[i].start(i + 1, i);

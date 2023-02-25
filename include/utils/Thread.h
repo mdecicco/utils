@@ -75,6 +75,8 @@ namespace utils {
             void waitForWork(Worker* w);
 
         private:
+            static FixedAllocator<Job>* allocatorPageGenerator();
+            
             Worker* m_workers;
             Array<Job*> m_pending;
 

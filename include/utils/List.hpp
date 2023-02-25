@@ -107,7 +107,12 @@ namespace utils {
     //
 
     template <typename T>
-    BidirectionalList<T>::BidirectionalList() : m_allocator(128, 128), m_size(0), m_front(nullptr), m_back(nullptr) {
+    FixedAllocator<BidirectionalListNode<T>>* BidirectionalList<T>::allocatorPageGenerator() {
+        return new FixedAllocator<BidirectionalListNode<T>>(128, 128);
+    }
+
+    template <typename T>
+    BidirectionalList<T>::BidirectionalList() : m_allocator(allocatorPageGenerator), m_size(0), m_front(nullptr), m_back(nullptr) {
     }
 
     template <typename T>
