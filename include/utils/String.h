@@ -32,9 +32,9 @@ namespace utils {
             char& operator[](u32 idx);
             char operator[](u32 idx) const;
 
-            inline const char* c_str() const;
-            inline operator std::string() const;
-            inline operator void*() const;
+            const char* c_str() const;
+            operator std::string() const;
+            operator void*() const;
 
             String& operator =(const char* rhs);
             String& operator =(const std::string& rhs);

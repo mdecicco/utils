@@ -66,15 +66,15 @@ namespace utils {
         return m_data[idx];
     }
     
-    inline const char* String::c_str() const {
+    const char* String::c_str() const {
         return m_data;
     }
 
-    inline String::operator std::string() const {
+    String::operator std::string() const {
         return std::string(m_data, m_len);
     }
 
-    inline String::operator void*() const {
+    String::operator void*() const {
         return m_data;
     }
 
