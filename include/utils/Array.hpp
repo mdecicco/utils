@@ -653,9 +653,14 @@ namespace utils {
     }
 
     template <typename T>
-    void Array<T>::reserve(u32 count) {
-        if (m_size + count < m_capacity) return;
+    void Array<T>::reserve(u32 count, bool doExpandSize) {
+        if (m_size + count < m_capacity) {
+            if (doExpandSize) m_size += count;
+            return;
+        }
+
         expand((m_size + count) - m_capacity);
+        if (doExpandSize) m_size += count;
     }
 
     template <typename T>
