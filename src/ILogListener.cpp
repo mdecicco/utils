@@ -73,6 +73,8 @@ namespace utils {
     }
 
     void IWithLogging::subscribeLogger(ILogListener* logger) {
+        if (logger == this) return;
+
         bool exists = m_listeners.some([logger](ILogListener* l) { return l == logger; });
         if (exists) return;
 
@@ -80,9 +82,17 @@ namespace utils {
     }
 
     void IWithLogging::unsubscribeLogger(ILogListener* logger) {
+        if (logger == this) return;
+
         i64 idx = m_listeners.findIndex([logger](ILogListener* l) { return l == logger; });
         if (idx == -1) return;
 
         m_listeners.remove(u32(idx));
+    }
+
+    void IWithLogging::onLogMessage(LOG_LEVEL level, const utils::String& scope, const utils::String& message) {
+        m_listeners.each([this, level, &scope, &message](ILogListener* logger) {
+            logger->onLogMessage(level, scope, message);
+        });
     }
 };

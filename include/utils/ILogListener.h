@@ -16,7 +16,7 @@ namespace utils {
             virtual void onLogMessage(LOG_LEVEL level, const utils::String& scope, const utils::String& message) = 0;
     };
 
-    class IWithLogging {
+    class IWithLogging : public ILogListener {
         public:
             IWithLogging(const utils::String& scope);
             virtual ~IWithLogging();
@@ -33,6 +33,8 @@ namespace utils {
 
             void subscribeLogger(ILogListener* logger);
             void unsubscribeLogger(ILogListener* logger);
+
+            virtual void onLogMessage(LOG_LEVEL level, const utils::String& scope, const utils::String& message);
         
         protected:
             utils::String m_scope;
