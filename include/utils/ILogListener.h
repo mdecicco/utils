@@ -20,16 +20,17 @@ namespace utils {
         public:
             IWithLogging(const utils::String& scope);
             virtual ~IWithLogging();
-
-            void log(LOG_LEVEL level, const utils::String& message) const;
-            void log(const char* messageFmt, ...) const;
-            void log(const utils::String& msg) const;
-            void warn(const char* messageFmt, ...) const;
-            void warn(const utils::String& msg) const;
-            void error(const char* messageFmt, ...) const;
-            void error(const utils::String& msg) const;
-            void fatal(const char* messageFmt, ...) const;
-            void fatal(const utils::String& msg) const;
+            
+            void propagateLog(LOG_LEVEL level, const utils::String& scope, const utils::String& message);
+            void log(LOG_LEVEL level, const utils::String& message);
+            void log(const char* messageFmt, ...);
+            void log(const utils::String& msg);
+            void warn(const char* messageFmt, ...);
+            void warn(const utils::String& msg);
+            void error(const char* messageFmt, ...);
+            void error(const utils::String& msg);
+            void fatal(const char* messageFmt, ...);
+            void fatal(const utils::String& msg);
 
             void subscribeLogger(ILogListener* logger);
             void unsubscribeLogger(ILogListener* logger);

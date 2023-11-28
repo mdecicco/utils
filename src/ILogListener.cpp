@@ -10,66 +10,70 @@ namespace utils {
     IWithLogging::~IWithLogging() {
     }
     
-    void IWithLogging::log(LOG_LEVEL level, const utils::String& message) const {
-        m_listeners.each([this, level, &message](ILogListener* logger) {
-            logger->onLogMessage(level, this->m_scope, message);
+    void IWithLogging::propagateLog(LOG_LEVEL level, const utils::String& scope, const utils::String& message) {
+        m_listeners.each([level, &scope, &message](ILogListener* logger) {
+            logger->onLogMessage(level, scope, message);
         });
     }
+    
+    void IWithLogging::log(LOG_LEVEL level, const utils::String& message) {
+        onLogMessage(level, m_scope, message);
+    }
 
-    void IWithLogging::log(const char* messageFmt, ...) const {
+    void IWithLogging::log(const char* messageFmt, ...) {
         char out[2048] = { 0 };
         va_list l;
         va_start(l, messageFmt);
         i32 len = vsnprintf(out, 2048, messageFmt, l);
         va_end(l);
 
-        log(LOG_INFO, utils::String(out, len));
+        onLogMessage(LOG_INFO, m_scope, utils::String(out, len));
     }
 
-    void IWithLogging::log(const utils::String& msg) const {
-        log(LOG_INFO, msg);
+    void IWithLogging::log(const utils::String& msg) {
+        onLogMessage(LOG_INFO, m_scope, msg);
     }
 
-    void IWithLogging::warn(const char* messageFmt, ...) const {
+    void IWithLogging::warn(const char* messageFmt, ...) {
         char out[2048] = { 0 };
         va_list l;
         va_start(l, messageFmt);
         i32 len = vsnprintf(out, 2048, messageFmt, l);
         va_end(l);
 
-        log(LOG_WARNING, utils::String(out, len));
+        onLogMessage(LOG_WARNING, m_scope, utils::String(out, len));
     }
 
-    void IWithLogging::warn(const utils::String& msg) const {
-        log(LOG_WARNING, msg);
+    void IWithLogging::warn(const utils::String& msg) {
+        onLogMessage(LOG_WARNING, m_scope, msg);
     }
 
-    void IWithLogging::error(const char* messageFmt, ...) const {
+    void IWithLogging::error(const char* messageFmt, ...) {
         char out[2048] = { 0 };
         va_list l;
         va_start(l, messageFmt);
         i32 len = vsnprintf(out, 2048, messageFmt, l);
         va_end(l);
 
-        log(LOG_ERROR, utils::String(out, len));
+        onLogMessage(LOG_ERROR, m_scope, utils::String(out, len));
     }
 
-    void IWithLogging::error(const utils::String& msg) const {
-        log(LOG_ERROR, msg);
+    void IWithLogging::error(const utils::String& msg) {
+        onLogMessage(LOG_ERROR, m_scope, msg);
     }
 
-    void IWithLogging::fatal(const char* messageFmt, ...) const {
+    void IWithLogging::fatal(const char* messageFmt, ...) {
         char out[2048] = { 0 };
         va_list l;
         va_start(l, messageFmt);
         i32 len = vsnprintf(out, 2048, messageFmt, l);
         va_end(l);
 
-        log(LOG_FATAL, utils::String(out, len));
+        onLogMessage(LOG_FATAL, m_scope, utils::String(out, len));
     }
 
-    void IWithLogging::fatal(const utils::String& msg) const {
-        log(LOG_FATAL, msg);
+    void IWithLogging::fatal(const utils::String& msg) {
+        onLogMessage(LOG_FATAL, m_scope, msg);
     }
 
     void IWithLogging::subscribeLogger(ILogListener* logger) {
@@ -91,8 +95,6 @@ namespace utils {
     }
 
     void IWithLogging::onLogMessage(LOG_LEVEL level, const utils::String& scope, const utils::String& message) {
-        m_listeners.each([this, level, &scope, &message](ILogListener* logger) {
-            logger->onLogMessage(level, scope, message);
-        });
+        propagateLog(level, scope, message);
     }
 };
