@@ -10,6 +10,8 @@ namespace utils {
     void IInputHandler::onMouseUp(MouseButton buttonIdx) {}
     void IInputHandler::onMouseMove(i32 x, i32 y) {}
     void IInputHandler::onScroll(i32 delta) {}
+    void IInputHandler::onWindowResize(Window* win, u32 width, u32 height) {}
+    void IInputHandler::onWindowMove(Window* win, i32 x, i32 y) {}
     void IInputHandler::onGamepadConnected(i32 id) {}
     void IInputHandler::onGamepadDisconnected(i32 id) {}
     void IInputHandler::onGamepadAxisChanged(i32 id, u8 axisIdx, f32 value) {}

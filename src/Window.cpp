@@ -284,6 +284,10 @@ namespace utils {
             m_height = rect.bottom - rect.top;
             m_posX = rect.left;
             m_posY = rect.top;
+
+            m_listeners.each([this](IInputHandler* h) {
+                h->onWindowResize(this, m_width, m_height);
+            });
         }
     }
 
@@ -294,6 +298,10 @@ namespace utils {
             m_height = rect.bottom - rect.top;
             m_posX = rect.left;
             m_posY = rect.top;
+
+            m_listeners.each([this](IInputHandler* h) {
+                h->onWindowMove(this, m_posX, m_posY);
+            });
         }
     }
     

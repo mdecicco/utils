@@ -2,6 +2,8 @@
 #include <utils/Types.h>
 
 namespace utils {
+    class Window;
+    
     enum MouseButton {
         LEFT_BUTTON,
         MIDDLE_BUTTON,
@@ -20,6 +22,8 @@ namespace utils {
             virtual void onMouseUp(MouseButton buttonIdx);
             virtual void onMouseMove(i32 x, i32 y);
             virtual void onScroll(i32 delta);
+            virtual void onWindowResize(Window* win, u32 width, u32 height);
+            virtual void onWindowMove(Window* win, i32 x, i32 y);
 
             // todo
             virtual void onGamepadConnected(i32 id);
