@@ -14,6 +14,8 @@ namespace utils {
     template <typename T> T max(const T& a, const T& b) { return a > b ? a : b; }
     template <typename T> T lerp(const T& a, const T& b, f32 t) { return a + ((b - a) * t); }
 
+    #pragma pack(push, 1)
+
     template <typename T>
     class vec2 {
         public:
@@ -527,4 +529,6 @@ namespace utils {
     typedef mat3<f64> mat3d;
     typedef mat4<f32> mat4f;
     typedef mat4<f64> mat4d;
+
+    #pragma pack(pop)
 };
