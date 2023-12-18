@@ -9,6 +9,129 @@
 #endif
 
 namespace utils {
+    bool isKeyCodeValid(u32 code) {
+        switch (code) {
+            case KEY_0:
+            case KEY_1:
+            case KEY_2:
+            case KEY_3:
+            case KEY_4:
+            case KEY_5:
+            case KEY_6:
+            case KEY_7:
+            case KEY_8:
+            case KEY_9:
+            case KEY_A:
+            case KEY_B:
+            case KEY_C:
+            case KEY_D:
+            case KEY_E:
+            case KEY_F:
+            case KEY_G:
+            case KEY_H:
+            case KEY_I:
+            case KEY_J:
+            case KEY_K:
+            case KEY_L:
+            case KEY_M:
+            case KEY_N:
+            case KEY_O:
+            case KEY_P:
+            case KEY_Q:
+            case KEY_R:
+            case KEY_S:
+            case KEY_T:
+            case KEY_U:
+            case KEY_V:
+            case KEY_W:
+            case KEY_X:
+            case KEY_Y:
+            case KEY_Z:
+            case KEY_SINGLE_QUOTE:
+            case KEY_BACKSLASH:
+            case KEY_COMMA:
+            case KEY_EQUAL:
+            case KEY_BACKTICK:
+            case KEY_LEFT_BRACKET:
+            case KEY_MINUS:
+            case KEY_PERIOD:
+            case KEY_RIGHT_BRACKET:
+            case KEY_SEMICOLON:
+            case KEY_SLASH:
+            case KEY_BACKSPACE:
+            case KEY_DELETE:
+            case KEY_END:
+            case KEY_ENTER:
+            case KEY_ESCAPE:
+            case KEY_HOME:
+            case KEY_INSERT:
+            case KEY_MENU:
+            case KEY_PAGE_DOWN:
+            case KEY_PAGE_UP:
+            case KEY_PAUSE:
+            case KEY_SPACE:
+            case KEY_TAB:
+            case KEY_CAP_LOCK:
+            case KEY_NUM_LOCK:
+            case KEY_SCROLL_LOCK:
+            case KEY_F1:
+            case KEY_F2:
+            case KEY_F3:
+            case KEY_F4:
+            case KEY_F5:
+            case KEY_F6:
+            case KEY_F7:
+            case KEY_F8:
+            case KEY_F9:
+            case KEY_F10:
+            case KEY_F11:
+            case KEY_F12:
+            case KEY_F13:
+            case KEY_F14:
+            case KEY_F15:
+            case KEY_F16:
+            case KEY_F17:
+            case KEY_F18:
+            case KEY_F19:
+            case KEY_F20:
+            case KEY_F21:
+            case KEY_F22:
+            case KEY_F23:
+            case KEY_F24:
+            case KEY_LEFT_ALT:
+            case KEY_LEFT_CONTROL:
+            case KEY_LEFT_SHIFT:
+            case KEY_LEFT_SUPER:
+            case KEY_PRINT_SCREEN:
+            case KEY_RIGHT_ALT:
+            case KEY_RIGHT_CONTROL:
+            case KEY_RIGHT_SHIFT:
+            case KEY_RIGHT_SUPER:
+            case KEY_DOWN:
+            case KEY_LEFT:
+            case KEY_RIGHT:
+            case KEY_UP:
+            case KEY_NUMPAD_0:
+            case KEY_NUMPAD_1:
+            case KEY_NUMPAD_2:
+            case KEY_NUMPAD_3:
+            case KEY_NUMPAD_4:
+            case KEY_NUMPAD_5:
+            case KEY_NUMPAD_6:
+            case KEY_NUMPAD_7:
+            case KEY_NUMPAD_8:
+            case KEY_NUMPAD_9:
+            case KEY_NUMPAD_ADD:
+            case KEY_NUMPAD_DECIMAL:
+            case KEY_NUMPAD_DIVIDE:
+            case KEY_NUMPAD_ENTER:
+            case KEY_NUMPAD_EQUAL:
+            case KEY_NUMPAD_MULTIPLY:
+            case KEY_NUMPAD_SUBTRACT: return true;
+            default: return false;
+        }
+    }
+
     #ifdef _WIN32
     LRESULT CALLBACK __windowProc(HWND win, UINT uMsg, WPARAM wParam, LPARAM lParam);
     #else
@@ -382,26 +505,29 @@ namespace utils {
             case WM_SIZE: { self->onResize(); break; }
             case WM_MOVE: { self->onMove(); break; }
             case WM_KEYDOWN: {
-                u8 ch = u8(wParam);
-                if (isalpha(ch)) ch = u8(tolower(ch));
-                self->m_listeners.each([ch](IInputHandler* h) {
-                    h->onKeyDown(ch);
+                KeyboardKey code = KeyboardKey(HIWORD(lParam) & (KF_EXTENDED | 0xff));
+                if (code == KEY_NONE) code = KeyboardKey(MapVirtualKeyW(u32(wParam), MAPVK_VK_TO_VSC));
+                if (!isKeyCodeValid(code)) break;
+                
+                self->m_listeners.each([code](IInputHandler* h) {
+                    h->onKeyDown(code);
                 });
 
                 break;
             }
             case WM_KEYUP: {
-                u8 ch = u8(wParam);
-                if (isalpha(ch)) ch = u8(tolower(ch));
-                self->m_listeners.each([ch](IInputHandler* h) {
-                    h->onKeyUp(u8(ch));
+                KeyboardKey code = KeyboardKey(HIWORD(lParam) & (KF_EXTENDED | 0xff));
+                if (code == KEY_NONE) code = KeyboardKey(MapVirtualKeyW(u32(wParam), MAPVK_VK_TO_VSC));
+                if (!isKeyCodeValid(code)) break;
+
+                self->m_listeners.each([code](IInputHandler* h) {
+                    h->onKeyUp(code);
                 });
 
                 break;
             }
             case WM_CHAR: {
                 u8 ch = u8(wParam);
-                if (isalpha(ch)) ch = u8(tolower(ch));
                 self->m_listeners.each([ch](IInputHandler* h) {
                     h->onChar(u8(ch));
                 });
@@ -419,8 +545,10 @@ namespace utils {
                 break;
             }
             case WM_MOUSEWHEEL: {
-                self->m_listeners.each([wParam](IInputHandler* h) {
-                    h->onScroll(GET_WHEEL_DELTA_WPARAM(wParam));
+                i16 x = HIWORD(wParam);
+                f32 d = x / f32(WHEEL_DELTA);
+                self->m_listeners.each([d](IInputHandler* h) {
+                    h->onScroll(d);
                 });
 
                 break;

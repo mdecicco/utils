@@ -4,6 +4,8 @@
 #include <xtr1common>
 #include <cmath>
 
+#undef near
+#undef far
 #undef min
 #undef max
 
@@ -12,9 +14,14 @@ namespace utils {
     template <typename T> T degrees(T radians) { return radians * T(57.2958); }
     template <typename T> T min(const T& a, const T& b) { return a < b ? a : b; }
     template <typename T> T max(const T& a, const T& b) { return a > b ? a : b; }
+    template <typename T> T clamp(const T& a, const T& minVal, const T& maxVal) { return max(min(a, maxVal), minVal); }
     template <typename T> T lerp(const T& a, const T& b, f32 t) { return a + ((b - a) * t); }
 
     #pragma pack(push, 1)
+
+    template <typename T> class mat2;
+    template <typename T> class mat3;
+    template <typename T> class mat4;
 
     template <typename T>
     class vec2 {
@@ -24,8 +31,7 @@ namespace utils {
                 "vec2 expects template T to be integral or floating point type"
             );
 
-            template <typename std::enable_if<!std::is_reference_v<T>, int>::type = 0>
-            vec2() : x(T(0)), y(T(0)) {}
+            vec2() requires !std::is_reference_v<T> : x(T(0)), y(T(0)) {}
             vec2(T _x, T _y) : x(_x), y(_y) {}
 
             template <typename R>
@@ -48,8 +54,8 @@ namespace utils {
             vec2<T>& operator/=(T rhs) { x /= rhs; y /= rhs; return *this; }
             vec2<T>& operator*=(T rhs) { x *= rhs; y *= rhs; return *this; }
             vec2<T> operator-() const { return vec2<T>(-x, -y); }
-            T operator[](u8 axis) const { return *(&x)[axis]; }
-            T& operator[](u8 axis) { return *(&x)[axis]; }
+            T operator[](u8 axis) const { return (&x)[axis]; }
+            T& operator[](u8 axis) { return (&x)[axis]; }
 
             T magnitudeSq() const { return x * x + y * y; }
             T magnitude() const { return std::sqrt(x * x + y * y); }
@@ -64,12 +70,11 @@ namespace utils {
     class vec3 {
         public:
             static_assert(
-                std::is_integral_v<T> || std::is_floating_point_v<T>,
+                std::is_integral_v<std::remove_reference_t<T>> || std::is_floating_point_v<std::remove_reference_t<T>>,
                 "vec3 expects template T to be integral or floating point type"
             );
 
-            template <typename std::enable_if<!std::is_reference_v<T>, int>::type = 0>
-            vec3() : x(T(0)), y(T(0)), z(T(0)) {}
+            vec3() requires !std::is_reference_v<T> : x(T(0)), y(T(0)), z(T(0)) {}
             vec3(T _x, T _y, T _z) : x(_x), y(_y), z(_z) {}
 
             template <typename R>
@@ -92,15 +97,15 @@ namespace utils {
             vec3<T>& operator/=(T rhs) { x /= rhs; y /= rhs; z /= rhs; return *this; }
             vec3<T>& operator*=(T rhs) { x *= rhs; y *= rhs; z *= rhs; return *this; }
             vec3<T> operator-() const { return vec3<T>(-x, -y, -z); }
-            T operator[](u8 axis) const { return *(&x)[axis]; }
-            T& operator[](u8 axis) { return *(&x)[axis]; }
+            T operator[](u8 axis) const { return (&x)[axis]; }
+            T& operator[](u8 axis) { return (&x)[axis]; }
 
             T magnitudeSq() const { return x * x + y * y + z * z; }
             T magnitude() const { return std::sqrt(x * x + y * y + z * z); }
             vec3<T> normalized() const { return *this * (T(1) / std::sqrt(x * x + y * y + z * z)); }
             void normalize() { T im = (T(1) / std::sqrt(x * x + y * y + z * z)); x *= im; y *= im; z *= im; }
             template <typename R> T dot(const vec3<R>& rhs) { return x * rhs.x + y * rhs.y + z * rhs.z; }
-            template <typename R> vec3<T> cross(const vec3<R>& rhs) {
+            template <typename R> vec3<T> cross(const vec3<R>& rhs) const {
                 return vec3<T>(
                     y * rhs.z - z * rhs.y,
                     z * rhs.x - x * rhs.z,
@@ -128,12 +133,11 @@ namespace utils {
     class vec4 {
         public:
             static_assert(
-                std::is_integral_v<T> || std::is_floating_point_v<T>,
+                std::is_integral_v<std::remove_reference_t<T>> || std::is_floating_point_v<std::remove_reference_t<T>>,
                 "vec4 expects template T to be integral or floating point type"
             );
 
-            template <typename std::enable_if<!std::is_reference_v<T>, int>::type = 0>
-            vec4() : x(T(0)), y(T(0)), z(T(0)), w(T(0)) {}
+            vec4() requires !std::is_reference_v<T> : x(T(0)), y(T(0)), z(T(0)), w(T(0)) {}
             vec4(T _x, T _y, T _z, T _w) : x(_x), y(_y), z(_z), w(_w) {}
 
             template <typename R>
@@ -146,10 +150,18 @@ namespace utils {
             template <typename R> vec4<T> operator-(const vec4<R>& rhs) const { return vec4<T>(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w); }
             template <typename R> vec4<T> operator/(const vec4<R>& rhs) const { return vec4<T>(x / rhs.x, y / rhs.y, z / rhs.z, w / rhs.w); }
             template <typename R> vec4<T> operator*(const vec4<R>& rhs) const { return vec4<T>(x * rhs.x, y * rhs.y, z * rhs.z, w * rhs.w); }
+            template <typename R> vec4<T> operator+(const vec3<R>& rhs) const { return vec4<T>(x + rhs.x, y + rhs.y, z + rhs.z, w); }
+            template <typename R> vec4<T> operator-(const vec3<R>& rhs) const { return vec4<T>(x - rhs.x, y - rhs.y, z - rhs.z, w); }
+            template <typename R> vec4<T> operator/(const vec3<R>& rhs) const { return vec4<T>(x / rhs.x, y / rhs.y, z / rhs.z, w); }
+            template <typename R> vec4<T> operator*(const vec3<R>& rhs) const { return vec4<T>(x * rhs.x, y * rhs.y, z * rhs.z, w); }
             template <typename R> vec4<T> operator+=(const vec4<R>& rhs) { x += rhs.x; y += rhs.y; z += rhs.z; w += rhs.w; return *this; }
             template <typename R> vec4<T> operator-=(const vec4<R>& rhs) { x -= rhs.x; y -= rhs.y; z -= rhs.z; w -= rhs.w; return *this; }
             template <typename R> vec4<T> operator/=(const vec4<R>& rhs) { x /= rhs.x; y /= rhs.y; z /= rhs.z; w /= rhs.w; return *this; }
             template <typename R> vec4<T> operator*=(const vec4<R>& rhs) { x *= rhs.x; y *= rhs.y; z *= rhs.z; w *= rhs.w; return *this; }
+            template <typename R> vec4<T> operator+=(const vec3<R>& rhs) { x += rhs.x; y += rhs.y; z += rhs.z; return *this; }
+            template <typename R> vec4<T> operator-=(const vec3<R>& rhs) { x -= rhs.x; y -= rhs.y; z -= rhs.z; return *this; }
+            template <typename R> vec4<T> operator/=(const vec3<R>& rhs) { x /= rhs.x; y /= rhs.y; z /= rhs.z; return *this; }
+            template <typename R> vec4<T> operator*=(const vec3<R>& rhs) { x *= rhs.x; y *= rhs.y; z *= rhs.z; return *this; }
             vec4<T> operator+(T rhs) const { return vec4<T>(x + rhs, y + rhs, z + rhs, w + rhs); }
             vec4<T> operator-(T rhs) const { return vec4<T>(x - rhs, y - rhs, z - rhs, w - rhs); }
             vec4<T> operator/(T rhs) const { return vec4<T>(x / rhs, y / rhs, z / rhs, w / rhs); }
@@ -159,8 +171,10 @@ namespace utils {
             vec4<T> operator/=(T rhs) { x /= rhs; y /= rhs; z /= rhs; w /= rhs; return *this; }
             vec4<T> operator*=(T rhs) { x *= rhs; y *= rhs; z *= rhs; w *= rhs; return *this; }
             vec4<T> operator-() const { return vec4<T>(-x, -y, -z, -w); }
-            T operator[](u8 axis) const { return *(&x)[axis]; }
-            T& operator[](u8 axis) { return *(&x)[axis]; }
+            T operator[](u8 axis) const { return (&x)[axis]; }
+            T& operator[](u8 axis) { return (&x)[axis]; }
+            operator vec3<T&>() { return vec3<T&>(x, y, z); }
+            operator vec3<T>() const { return vec3<T>(x, y, z); }
 
             T magnitudeSq() const { return x * x + y * y + z * z + w * w; }
             T magnitude() const { return std::sqrt(x * x + y * y + z * z + w * w); }
@@ -223,6 +237,8 @@ namespace utils {
                 );
             }
 
+            static quat<T> FromMatrix(const mat3<T>& mat);
+
             vec3<T> axis;
             T angle;
     };
@@ -244,8 +260,10 @@ namespace utils {
                     y.x * rhs.x.y + y.y * rhs.y.y
                 );
             }
-            template <typename R> mat2<T>& operator*= (const mat2<R>& rhs) const { return *this = *this * rhs; }
+            template <typename R> mat2<T>& operator*= (const mat2<R>& rhs) { return *this = *this * rhs; }
             template <typename R> mat2<T>& operator= (const mat2<R>& rhs) { x = rhs.x; y = rhs.y; return *this; }
+            vec2<T>& operator[](u8 axis) { return (&x)[axis]; }
+            const vec2<T>& operator[](u8 axis) const { return (&x)[axis]; }
             mat2<T> transposed() const {
                 return mat2<T>(
                     x.x, y.x,
@@ -306,8 +324,10 @@ namespace utils {
                     x.z * rhs.x + y.z * rhs.y + z.z * rhs.z
                 );
             }
-            template <typename R> mat3<T> operator*= (const mat3<R>& rhs) const { return *this = *this * rhs; }
+            template <typename R> mat3<T> operator*= (const mat3<R>& rhs) { return *this = *this * rhs; }
             template <typename R> mat3<T>& operator= (const mat3<R>& rhs) { x = rhs.x; y = rhs.y; z = rhs.z; return *this; }
+            vec3<T>& operator[](u8 axis) { return (&x)[axis]; }
+            const vec3<T>& operator[](u8 axis) const { return (&x)[axis]; }
             mat3<T> transposed() const {
                 return mat3<T>(
                     x.x, y.x, z.x,
@@ -417,8 +437,31 @@ namespace utils {
                     w.x * rhs.x.w + w.y * rhs.y.w + w.z * rhs.z.w + w.w * rhs.w.w
                 );
             }
-            template <typename R> mat4<T> operator*= (const mat4<R>& rhs) const { return *this = *this * rhs; }
+            template <typename R> mat4<T> operator* (const mat3<R>& rhs) const {
+                return mat4<T>(
+                    x.x * rhs.x.x + x.y * rhs.y.x + x.z * rhs.z.x,
+                    x.x * rhs.x.y + x.y * rhs.y.y + x.z * rhs.z.y,
+                    x.x * rhs.x.z + x.y * rhs.y.z + x.z * rhs.z.z,
+                    x.w,
+                    
+                    y.x * rhs.x.x + y.y * rhs.y.x + y.z * rhs.z.x,
+                    y.x * rhs.x.y + y.y * rhs.y.y + y.z * rhs.z.y,
+                    y.x * rhs.x.z + y.y * rhs.y.z + y.z * rhs.z.z,
+                    y.w,
+                    
+                    z.x * rhs.x.x + z.y * rhs.y.x + z.z * rhs.z.x,
+                    z.x * rhs.x.y + z.y * rhs.y.y + z.z * rhs.z.y,
+                    z.x * rhs.x.z + z.y * rhs.y.z + z.z * rhs.z.z,
+                    z.w,
+
+                    w.x, w.y, w.z, w.w
+                );
+            }
+            template <typename R> mat4<T> operator*= (const mat4<R>& rhs) { return *this = *this * rhs; }
+            template <typename R> mat4<T> operator*= (const mat3<R>& rhs) { return *this = *this * rhs; }
             template <typename R> mat4<T>& operator= (const mat4<R>& rhs) { x = rhs.x; y = rhs.y; z = rhs.z; w = rhs.w; return *this; }
+            vec4<T>& operator[](u8 axis) { return (&x)[axis]; }
+            const vec4<T>& operator[](u8 axis) const { return (&x)[axis]; }
             mat4<T> transposed() const {
                 return mat4<T>(
                     x.x, y.x, z.x, w.x,
@@ -448,6 +491,13 @@ namespace utils {
                 w.x = xw;
                 w.y = yw;
                 w.z = zw;
+            }
+            mat3<T> basis() const {
+                return mat3<T>(
+                    x.x, x.y, x.z,
+                    y.x, y.y, y.z,
+                    z.x, z.y, z.z
+                );
             }
             static mat4<T> Translation(const vec3<T>& trans) {
                 return mat4<T>(
@@ -507,6 +557,84 @@ namespace utils {
             vec4<T> x, y, z, w;
     };
 
+    template <typename T>
+    quat<T> quat<T>::FromMatrix(const mat3<T>& m) {
+        auto getMinParamIdx = [](f32 a, f32 b, f32 c, f32 d) {
+            u8 idx = 0;
+            f32 min = a;
+            
+            if (b < min) {
+                idx = 1;
+                min = b;
+            }
+            
+            if (c < min) {
+                idx = 2;
+                min = c;
+            }
+            
+            if (d < min) {
+                idx = 3;
+                min = d;
+            }
+
+            return idx;
+        };
+
+        quat<T> out;
+        f32 xx = m.x.x;
+        f32 yy = m.y.y;
+        f32 zz = m.z.z;
+        f32 sum = xx + yy + zz;
+
+        u8 minIdx = getMinParamIdx(sum, xx, yy, zz);
+
+        switch (minIdx) {
+            case 0: {
+                f32 unk = sqrtf(sum + 1.0f) * 0.5f;
+                f32 unk1 = 0.25f / unk;
+
+                out.axis.x = (m.y.z - m.z.y) * unk1;
+                out.axis.y = (m.z.x - m.x.z) * unk1;
+                out.axis.z = (m.x.y - m.y.x) * unk1;
+                out.angle = unk;
+                break;
+            }
+            case 1: {
+                f32 unk = sqrtf(((m.x.x + m.x.x) - sum) + 1.0f) * 0.5f;
+                f32 unk1 = 0.25f / unk;
+
+                out.axis.x = unk;
+                out.axis.y = (m.x.y + m.y.x) * unk1;
+                out.axis.z = (m.z.x + m.x.z) * unk1;
+                out.angle = (m.y.z - m.z.y) * unk1;
+                break;
+            }
+            case 2: {
+                f32 unk = sqrtf(((m.y.y + m.y.y) - sum) + 1.0) * 0.5;
+                f32 unk1 = 0.25 / unk;
+
+                out.axis.x = (m.x.y + m.y.x) * unk1;
+                out.axis.y = unk;
+                out.axis.z = (m.y.z + m.z.y) * unk1;
+                out.angle = (m.z.x - m.x.z) * unk1;
+                break;
+            }
+            case 3: {
+                f32 unk = sqrtf(((m.z.z + m.z.z) - sum) + 1.0f) * 0.5f;
+                f32 unk1 = 0.25f / unk;
+
+                out.axis.x = (m.z.x + m.x.z) * unk1;
+                out.axis.y = (m.y.z + m.z.y) * unk1;
+                out.axis.z = unk;
+                out.angle = (m.x.y - m.y.x) * unk1;
+                break;
+            }
+        }
+
+        return out;
+    }
+
     typedef vec2<i32> vec2i;
     typedef vec2<u32> vec2ui;
     typedef vec2<f32> vec2f;
@@ -520,8 +648,8 @@ namespace utils {
     typedef vec4<f32> vec4f;
     typedef vec4<f64> vec4d;
 
-    typedef quat<f32> quat4f;
-    typedef quat<f64> quat4d;
+    typedef quat<f32> quatf;
+    typedef quat<f64> quatd;
 
     typedef mat2<f32> mat2f;
     typedef mat2<f64> mat2d;
