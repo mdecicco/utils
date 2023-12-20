@@ -10,6 +10,10 @@
 #undef max
 
 namespace utils {
+    template <typename T> T random(T minVal, T maxVal) {
+        static_assert(std::is_floating_point_v<T> || std::is_integral_v<T>, "random expects template T to be integral or floating point type");
+        return minVal + ((maxVal - minVal) * (T(rand()) / T(RAND_MAX)));
+    }
     template <typename T> T radians(T degrees) { return degrees * T(0.0174533); }
     template <typename T> T degrees(T radians) { return radians * T(57.2958); }
     template <typename T> T min(const T& a, const T& b) { return a < b ? a : b; }
@@ -41,10 +45,10 @@ namespace utils {
             template <typename R> vec2<T> operator-(const vec2<R>& rhs) const { return vec2<T>(x - rhs.x, y - rhs.y); }
             template <typename R> vec2<T> operator/(const vec2<R>& rhs) const { return vec2<T>(x / rhs.x, y / rhs.y); }
             template <typename R> vec2<T> operator*(const vec2<R>& rhs) const { return vec2<T>(x * rhs.x, y * rhs.y); }
-            template <typename R> vec2<T>& operator+=(const vec2<R>& rhs) { return x += rhs.x; y += rhs.y; return *this; }
-            template <typename R> vec2<T>& operator-=(const vec2<R>& rhs) { return x -= rhs.x; y -= rhs.y; return *this; }
-            template <typename R> vec2<T>& operator/=(const vec2<R>& rhs) { return x /= rhs.x; y /= rhs.y; return *this; }
-            template <typename R> vec2<T>& operator*=(const vec2<R>& rhs) { return x *= rhs.x; y *= rhs.y; return *this; }
+            template <typename R> vec2<T>& operator+=(const vec2<R>& rhs) { x += rhs.x; y += rhs.y; return *this; }
+            template <typename R> vec2<T>& operator-=(const vec2<R>& rhs) { x -= rhs.x; y -= rhs.y; return *this; }
+            template <typename R> vec2<T>& operator/=(const vec2<R>& rhs) { x /= rhs.x; y /= rhs.y; return *this; }
+            template <typename R> vec2<T>& operator*=(const vec2<R>& rhs) { x *= rhs.x; y *= rhs.y; return *this; }
             vec2<T> operator+(T rhs) const { return vec2<T>(x + rhs, y + rhs); }
             vec2<T> operator-(T rhs) const { return vec2<T>(x - rhs, y - rhs); }
             vec2<T> operator/(T rhs) const { return vec2<T>(x / rhs, y / rhs); }
@@ -550,6 +554,19 @@ namespace utils {
                 out.z.z = (far + near) / (near - far);
                 out.z.w = T(-1.0);
                 out.w.z = (T(2.0) * near * far) / (near - far);
+
+                return out;
+            }
+            static mat4<T> Orthographic(T left, T right, T top, T bottom, T near, T far) {
+                mat4<T> out;
+
+                out.x.x = T( 2.0) / (right - left  );
+                out.y.y = T( 2.0) / (top   - bottom);
+                out.z.z = T(-2.0) / (far   - near  );
+                out.w.x = -((right + left  ) / (right - left  ));
+                out.w.y = -((top   + bottom) / (top   - bottom));
+                out.w.z = -((far   + near  ) / (far   - near  ));
+                out.w.w = T(1.0);
 
                 return out;
             }

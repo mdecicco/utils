@@ -1,6 +1,7 @@
 #pragma once
 #include <utils/Types.h>
 #include <utils/String.h>
+#include <utils/Math.hpp>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -14,6 +15,17 @@ namespace utils {
     LRESULT CALLBACK __windowProc(HWND win, UINT uMsg, WPARAM wParam, LPARAM lParam);
     #else
     #endif
+
+    struct MonitorInfo {
+        vec2ui dimensions;
+        vec2i position;
+        bool isPrimary;
+
+        #ifdef _WIN32
+        HMONITOR handle;
+        #else
+        #endif
+    };
 
     class Window {
         public:
@@ -36,10 +48,13 @@ namespace utils {
             void getPosition(i32* x, i32* y);
             bool setOpen(bool doOpen);
             bool isOpen() const;
+            void setBorderEnabled(bool enabled);
             void subscribe(IInputHandler* inputHandler);
             void unsubscribe(IInputHandler* inputHandler);
 
             bool pollEvents();
+
+            static Array<MonitorInfo> GetMonitors();
 
             #ifdef _WIN32
             HWND getHandle();

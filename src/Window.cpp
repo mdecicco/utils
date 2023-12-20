@@ -1,6 +1,7 @@
 #include <utils/Window.h>
 #include <utils/Array.hpp>
 #include <utils/Input.h>
+#include <utils/Array.hpp>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -134,6 +135,7 @@ namespace utils {
 
     #ifdef _WIN32
     LRESULT CALLBACK __windowProc(HWND win, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData);
     #else
     #endif
 
@@ -286,10 +288,16 @@ namespace utils {
 
     bool Window::setSize(u32 width, u32 height) {
         #ifdef _WIN32
+
+        if (!m_windowHandle) {
+            m_width = width;
+            m_height = height;
+            return true;
+        }
         
         if (SetWindowPos(m_windowHandle, nullptr, m_posX, m_posY, width, height, SWP_NOMOVE) == TRUE) {
             m_width = width;
-            m_width = height;
+            m_height = height;
             return true;
         }
 
@@ -306,6 +314,12 @@ namespace utils {
 
     bool Window::setPosition(i32 x, i32 y) {
         #ifdef _WIN32
+
+        if (!m_windowHandle) {
+            m_posX = x;
+            m_posY = y;
+            return true;
+        }
         
         if (SetWindowPos(m_windowHandle, nullptr, x, y, m_width, m_height, SWP_NOSIZE) == TRUE) {
             m_posX = x;
@@ -360,6 +374,47 @@ namespace utils {
         return m_isOpen;
     }
     
+    void Window::setBorderEnabled(bool enabled) {
+        #ifdef _WIN32
+
+        if (!m_windowHandle) return;
+
+        if (!enabled) {
+            LONG lStyle = GetWindowLong(m_windowHandle, GWL_STYLE);
+            lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
+            SetWindowLong(m_windowHandle, GWL_STYLE, lStyle);
+
+            LONG lExStyle = GetWindowLong(m_windowHandle, GWL_EXSTYLE);
+            lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
+            SetWindowLong(m_windowHandle, GWL_EXSTYLE, lExStyle);
+
+            SetWindowPos(
+                m_windowHandle,
+                NULL,
+                0,0,0,0,
+                SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER
+            );
+        } else {
+            LONG lStyle = GetWindowLong(m_windowHandle, GWL_STYLE);
+            lStyle |= WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU;
+            SetWindowLong(m_windowHandle, GWL_STYLE, lStyle);
+
+            LONG lExStyle = GetWindowLong(m_windowHandle, GWL_EXSTYLE);
+            lExStyle |= WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE;
+            SetWindowLong(m_windowHandle, GWL_EXSTYLE, lExStyle);
+
+            SetWindowPos(
+                m_windowHandle,
+                NULL,
+                0,0,0,0,
+                SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER
+            );
+        }
+
+        #else
+        #endif
+    }
+
     void Window::subscribe(IInputHandler* inputHandler) {
         IInputHandler* existing = m_listeners.find([inputHandler](IInputHandler* h) {
             return h == inputHandler;
@@ -398,6 +453,24 @@ namespace utils {
         #endif
 
         return false;
+    }
+
+    Array<MonitorInfo> Window::GetMonitors() {
+        #ifdef _WIN32
+            HMONITOR primary = MonitorFromWindow(GetDesktopWindow(), MONITOR_DEFAULTTOPRIMARY);
+            Array<MonitorInfo> out;
+            EnumDisplayMonitors(nullptr, nullptr, MonitorEnumProc, (LPARAM)&out);
+
+            for(u32 i = 0;i < out.size();i++) {
+                if (out[i].handle == primary) {
+                    out[i].isPrimary = true;
+                    break;
+                }
+            }
+
+            return out;
+        #else
+        #endif
     }
 
     void Window::onResize() {
@@ -598,6 +671,32 @@ namespace utils {
         }
 
         return DefWindowProc(win, uMsg, wParam, lParam);
+    }
+    
+    BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+        Array<MonitorInfo>& arr = *(Array<MonitorInfo>*)dwData;
+
+        MONITORINFO minfo;
+        minfo.cbSize = sizeof(MONITORINFO);
+        
+        if (!GetMonitorInfo(hMonitor, &minfo)) {
+            return TRUE;
+        }
+        
+        arr.push({});
+        MonitorInfo& mi = arr.last();
+
+        mi.dimensions = vec2ui(
+            minfo.rcMonitor.right - minfo.rcMonitor.left,
+            minfo.rcMonitor.bottom - minfo.rcMonitor.top
+        );
+        mi.position = vec2i(
+            minfo.rcMonitor.left,
+            minfo.rcMonitor.top
+        );
+        mi.handle = hMonitor;
+
+        return TRUE;
     }
     #else
     #endif
