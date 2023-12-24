@@ -17,9 +17,12 @@ namespace utils {
     #endif
 
     struct MonitorInfo {
-        vec2ui dimensions;
+        vec2ui virtualDimensions;
+        vec2ui actualDimensions;
         vec2i position;
         bool isPrimary;
+        u32 bitsPerPixel;
+        u32 refreshRate;
 
         #ifdef _WIN32
         HMONITOR handle;
@@ -63,6 +66,7 @@ namespace utils {
         
         protected:
             bool m_isOpen;
+            bool m_borderless;
             String m_title;
             u32 m_width;
             u32 m_height;

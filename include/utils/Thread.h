@@ -61,6 +61,10 @@ namespace utils {
             void processArray(Array<T>& arr, u32 batchSize, F&& cb);
             template <typename T, typename F>
             void processArray(Array<T>& arr, u32 minBatchSize, u32 maxBatchSize, F&& cb);
+            template <typename T, typename F>
+            void processArray(T* arr, u32 count, u32 batchSize, F&& cb);
+            template <typename T, typename F>
+            void processArray(T* arr, u32 count, u32 minBatchSize, u32 maxBatchSize, F&& cb);
 
         protected:
             friend class Singleton<sThreadPool>;

@@ -143,6 +143,7 @@ namespace utils {
         m_width = m_height = UINT32_MAX;
         m_posX = m_posY = 0;
         m_isOpen = false;
+        m_borderless = false;
         m_parent = nullptr;
 
         #ifdef _WIN32
@@ -156,6 +157,7 @@ namespace utils {
         m_width = m_height = UINT32_MAX;
         m_posX = m_posY = 0;
         m_isOpen = false;
+        m_borderless = false;
         m_parent = nullptr;
 
         #ifdef _WIN32
@@ -169,6 +171,7 @@ namespace utils {
         m_height = height;
         m_posX = m_posY = 0;
         m_isOpen = false;
+        m_borderless = false;
         m_parent = nullptr;
 
         #ifdef _WIN32
@@ -183,6 +186,7 @@ namespace utils {
         m_height = height;
         m_posX = m_posY = 0;
         m_isOpen = false;
+        m_borderless = false;
         m_parent = nullptr;
 
         #ifdef _WIN32
@@ -195,6 +199,7 @@ namespace utils {
         m_width = m_height = UINT32_MAX;
         m_posX = m_posY = 0;
         m_isOpen = false;
+        m_borderless = false;
         m_parent = parent;
 
         #ifdef _WIN32
@@ -208,6 +213,7 @@ namespace utils {
         m_width = m_height = UINT32_MAX;
         m_posX = m_posY = 0;
         m_isOpen = false;
+        m_borderless = false;
         m_parent = parent;
 
         #ifdef _WIN32
@@ -221,6 +227,7 @@ namespace utils {
         m_height = height;
         m_posX = m_posY = 0;
         m_isOpen = false;
+        m_borderless = false;
         m_parent = parent;
 
         #ifdef _WIN32
@@ -235,6 +242,7 @@ namespace utils {
         m_height = height;
         m_posX = m_posY = 0;
         m_isOpen = false;
+        m_borderless = false;
         m_parent = parent;
 
         #ifdef _WIN32
@@ -360,7 +368,6 @@ namespace utils {
 
         if (!createWindowHandle_win32()) return false;
 
-        ShowWindow(m_windowHandle, SW_SHOWNORMAL);
         m_isOpen = true;
         return true;
 
@@ -377,7 +384,10 @@ namespace utils {
     void Window::setBorderEnabled(bool enabled) {
         #ifdef _WIN32
 
-        if (!m_windowHandle) return;
+        if (!m_windowHandle || enabled != m_borderless) {
+            m_borderless = !enabled;
+            return;
+        }
 
         if (!enabled) {
             LONG lStyle = GetWindowLong(m_windowHandle, GWL_STYLE);
@@ -388,12 +398,14 @@ namespace utils {
             lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
             SetWindowLong(m_windowHandle, GWL_EXSTYLE, lExStyle);
 
-            SetWindowPos(
+            bool result = SetWindowPos(
                 m_windowHandle,
                 NULL,
                 0,0,0,0,
                 SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER
             );
+
+            if (result) m_borderless = true;
         } else {
             LONG lStyle = GetWindowLong(m_windowHandle, GWL_STYLE);
             lStyle |= WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU;
@@ -403,12 +415,14 @@ namespace utils {
             lExStyle |= WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE;
             SetWindowLong(m_windowHandle, GWL_EXSTYLE, lExStyle);
 
-            SetWindowPos(
+            bool result = SetWindowPos(
                 m_windowHandle,
                 NULL,
                 0,0,0,0,
                 SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER
             );
+
+            if (result) m_borderless = false;
         }
 
         #else
@@ -517,6 +531,8 @@ namespace utils {
     }
     
     bool Window::createWindowHandle_win32() {
+        SetProcessDPIAware();
+
         String className = String::Format("WinUtil_%d", rand());
         WNDCLASSEX wnd;
         wnd.hInstance = GetModuleHandle(nullptr);
@@ -534,11 +550,15 @@ namespace utils {
 
         if (!RegisterClassEx(&wnd)) return false;
 
+        u32 styleFlags;
+        if (m_borderless) styleFlags = WS_OVERLAPPED;
+        else styleFlags = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+
         m_windowHandle = CreateWindowEx(
             0,
             className.c_str(),
             m_title.c_str(),
-            WS_OVERLAPPEDWINDOW,
+            styleFlags,
             m_posX == UINT32_MAX ? CW_USEDEFAULT : m_posX,
             m_posY == UINT32_MAX ? CW_USEDEFAULT : m_posY,
             m_width == UINT32_MAX ? 800 : m_width,
@@ -550,8 +570,14 @@ namespace utils {
         );
 
         if (!m_windowHandle) return false;
-
         SetWindowLongPtr(m_windowHandle, 0, (LONG_PTR)this);
+        ShowWindow(m_windowHandle, SW_SHOWNORMAL);
+
+        // Don't ask me why CreateWindowEx won't just create the window with the correct style from the beginning...
+        if (m_borderless) {
+            m_borderless = false;
+            setBorderEnabled(false);
+        }
 
         RECT rect;
         if (GetWindowRect(m_windowHandle, &rect)) {
@@ -676,8 +702,8 @@ namespace utils {
     BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
         Array<MonitorInfo>& arr = *(Array<MonitorInfo>*)dwData;
 
-        MONITORINFO minfo;
-        minfo.cbSize = sizeof(MONITORINFO);
+        MONITORINFOEX minfo;
+        minfo.cbSize = sizeof(MONITORINFOEX);
         
         if (!GetMonitorInfo(hMonitor, &minfo)) {
             return TRUE;
@@ -686,14 +712,24 @@ namespace utils {
         arr.push({});
         MonitorInfo& mi = arr.last();
 
-        mi.dimensions = vec2ui(
+        DEVMODE devmode = {};
+        devmode.dmSize = sizeof(DEVMODE);
+        EnumDisplaySettings(minfo.szDevice, ENUM_CURRENT_SETTINGS, &devmode);
+
+        mi.virtualDimensions = vec2ui(
             minfo.rcMonitor.right - minfo.rcMonitor.left,
             minfo.rcMonitor.bottom - minfo.rcMonitor.top
+        );
+        mi.actualDimensions = vec2ui(
+            devmode.dmPelsWidth,
+            devmode.dmPelsHeight
         );
         mi.position = vec2i(
             minfo.rcMonitor.left,
             minfo.rcMonitor.top
         );
+        mi.bitsPerPixel = devmode.dmBitsPerPel;
+        mi.refreshRate = devmode.dmDisplayFrequency;
         mi.handle = hMonitor;
 
         return TRUE;

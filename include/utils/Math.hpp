@@ -12,7 +12,14 @@
 namespace utils {
     template <typename T> T random(T minVal, T maxVal) {
         static_assert(std::is_floating_point_v<T> || std::is_integral_v<T>, "random expects template T to be integral or floating point type");
-        return minVal + ((maxVal - minVal) * (T(rand()) / T(RAND_MAX)));
+
+        if (minVal == maxVal) return minVal;
+
+        if constexpr (std::is_floating_point_v<T>) {
+            return minVal + ((maxVal - minVal) * (T(rand()) / T(RAND_MAX)));
+        } else {
+            return minVal + T(rand()) % (maxVal - minVal);
+        }
     }
     template <typename T> T radians(T degrees) { return degrees * T(0.0174533); }
     template <typename T> T degrees(T radians) { return radians * T(57.2958); }
@@ -30,6 +37,8 @@ namespace utils {
     template <typename T>
     class vec2 {
         public:
+            using base_type = std::remove_reference_t<T>;
+            using const_result = vec2<base_type>;
             static_assert(
                 std::is_integral_v<std::remove_reference_t<T>> || std::is_floating_point_v<std::remove_reference_t<T>>,
                 "vec2 expects template T to be integral or floating point type"
@@ -41,31 +50,31 @@ namespace utils {
             template <typename R>
             vec2(const vec2<R>& rhs) : x(rhs.x), y(rhs.y) {}
 
-            template <typename R> vec2<T> operator+(const vec2<R>& rhs) const { return vec2<T>(x + rhs.x, y + rhs.y); }
-            template <typename R> vec2<T> operator-(const vec2<R>& rhs) const { return vec2<T>(x - rhs.x, y - rhs.y); }
-            template <typename R> vec2<T> operator/(const vec2<R>& rhs) const { return vec2<T>(x / rhs.x, y / rhs.y); }
-            template <typename R> vec2<T> operator*(const vec2<R>& rhs) const { return vec2<T>(x * rhs.x, y * rhs.y); }
+            template <typename R> const_result operator+(const vec2<R>& rhs) const { return const_result(x + rhs.x, y + rhs.y); }
+            template <typename R> const_result operator-(const vec2<R>& rhs) const { return const_result(x - rhs.x, y - rhs.y); }
+            template <typename R> const_result operator/(const vec2<R>& rhs) const { return const_result(x / rhs.x, y / rhs.y); }
+            template <typename R> const_result operator*(const vec2<R>& rhs) const { return const_result(x * rhs.x, y * rhs.y); }
             template <typename R> vec2<T>& operator+=(const vec2<R>& rhs) { x += rhs.x; y += rhs.y; return *this; }
             template <typename R> vec2<T>& operator-=(const vec2<R>& rhs) { x -= rhs.x; y -= rhs.y; return *this; }
             template <typename R> vec2<T>& operator/=(const vec2<R>& rhs) { x /= rhs.x; y /= rhs.y; return *this; }
             template <typename R> vec2<T>& operator*=(const vec2<R>& rhs) { x *= rhs.x; y *= rhs.y; return *this; }
-            vec2<T> operator+(T rhs) const { return vec2<T>(x + rhs, y + rhs); }
-            vec2<T> operator-(T rhs) const { return vec2<T>(x - rhs, y - rhs); }
-            vec2<T> operator/(T rhs) const { return vec2<T>(x / rhs, y / rhs); }
-            vec2<T> operator*(T rhs) const { return vec2<T>(x * rhs, y * rhs); }
-            vec2<T>& operator+=(T rhs) { x += rhs; y += rhs; return *this; }
-            vec2<T>& operator-=(T rhs) { x -= rhs; y -= rhs; return *this; }
-            vec2<T>& operator/=(T rhs) { x /= rhs; y /= rhs; return *this; }
-            vec2<T>& operator*=(T rhs) { x *= rhs; y *= rhs; return *this; }
-            vec2<T> operator-() const { return vec2<T>(-x, -y); }
-            T operator[](u8 axis) const { return (&x)[axis]; }
-            T& operator[](u8 axis) { return (&x)[axis]; }
+            const_result operator+(base_type rhs) const { return const_result(x + rhs, y + rhs); }
+            const_result operator-(base_type rhs) const { return const_result(x - rhs, y - rhs); }
+            const_result operator/(base_type rhs) const { return const_result(x / rhs, y / rhs); }
+            const_result operator*(base_type rhs) const { return const_result(x * rhs, y * rhs); }
+            vec2<T>& operator+=(base_type rhs) { x += rhs; y += rhs; return *this; }
+            vec2<T>& operator-=(base_type rhs) { x -= rhs; y -= rhs; return *this; }
+            vec2<T>& operator/=(base_type rhs) { x /= rhs; y /= rhs; return *this; }
+            vec2<T>& operator*=(base_type rhs) { x *= rhs; y *= rhs; return *this; }
+            const_result operator-() const { return const_result(-x, -y); }
+            base_type operator[](u8 axis) const { return (&x)[axis]; }
+            base_type& operator[](u8 axis) { return (&x)[axis]; }
 
-            T magnitudeSq() const { return x * x + y * y; }
-            T magnitude() const { return std::sqrt(x * x + y * y); }
-            vec2<T> normalized() const { return *this * (T(1) / std::sqrt(x * x + y * y)); }
-            void normalize() { T im = (T(1) / std::sqrt(x * x + y * y)); x *= im; y *= im; }
-            template <typename R> T dot(const vec2<R>& rhs) { return x * rhs.x + y * rhs.y; }
+            base_type magnitudeSq() const { return x * x + y * y; }
+            base_type magnitude() const { return std::sqrt(x * x + y * y); }
+            const_result normalized() const { return *this * (base_type(1) / std::sqrt(x * x + y * y)); }
+            void normalize() { base_type im = (base_type(1) / std::sqrt(x * x + y * y)); x *= im; y *= im; }
+            template <typename R> base_type dot(const vec2<R>& rhs) { return x * rhs.x + y * rhs.y; }
 
             T x, y;
     };
@@ -73,6 +82,8 @@ namespace utils {
     template <typename T>
     class vec3 {
         public:
+            using base_type = std::remove_reference_t<T>;
+            using const_result = vec3<base_type>;
             static_assert(
                 std::is_integral_v<std::remove_reference_t<T>> || std::is_floating_point_v<std::remove_reference_t<T>>,
                 "vec3 expects template T to be integral or floating point type"
@@ -84,51 +95,96 @@ namespace utils {
             template <typename R>
             vec3(const vec3<R>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) {}
 
-            template <typename R> vec3<T> operator+(const vec3<R>& rhs) const { return vec3<T>(x + rhs.x, y + rhs.y, z + rhs.z); }
-            template <typename R> vec3<T> operator-(const vec3<R>& rhs) const { return vec3<T>(x - rhs.x, y - rhs.y, z - rhs.z); }
-            template <typename R> vec3<T> operator/(const vec3<R>& rhs) const { return vec3<T>(x / rhs.x, y / rhs.y, z / rhs.z); }
-            template <typename R> vec3<T> operator*(const vec3<R>& rhs) const { return vec3<T>(x * rhs.x, y * rhs.y, z * rhs.z); }
+            template <typename R> const_result operator+(const vec3<R>& rhs) const { return const_result(x + rhs.x, y + rhs.y, z + rhs.z); }
+            template <typename R> const_result operator-(const vec3<R>& rhs) const { return const_result(x - rhs.x, y - rhs.y, z - rhs.z); }
+            template <typename R> const_result operator/(const vec3<R>& rhs) const { return const_result(x / rhs.x, y / rhs.y, z / rhs.z); }
+            template <typename R> const_result operator*(const vec3<R>& rhs) const { return const_result(x * rhs.x, y * rhs.y, z * rhs.z); }
             template <typename R> vec3<T>& operator+=(const vec3<R>& rhs) { x += rhs.x; y += rhs.y; z += rhs.z; return *this; }
             template <typename R> vec3<T>& operator-=(const vec3<R>& rhs) { x -= rhs.x; y -= rhs.y; z -= rhs.z; return *this; }
             template <typename R> vec3<T>& operator/=(const vec3<R>& rhs) { x /= rhs.x; y /= rhs.y; z /= rhs.z; return *this; }
             template <typename R> vec3<T>& operator*=(const vec3<R>& rhs) { x *= rhs.x; y *= rhs.y; z *= rhs.z; return *this; }
-            vec3<T> operator+(T rhs) const { return vec3<T>(x + rhs, y + rhs, z + rhs); }
-            vec3<T> operator-(T rhs) const { return vec3<T>(x - rhs, y - rhs, z - rhs); }
-            vec3<T> operator/(T rhs) const { return vec3<T>(x / rhs, y / rhs, z / rhs); }
-            vec3<T> operator*(T rhs) const { return vec3<T>(x * rhs, y * rhs, z * rhs); }
-            vec3<T>& operator+=(T rhs) { x += rhs; y += rhs; z += rhs; return *this; }
-            vec3<T>& operator-=(T rhs) { x -= rhs; y -= rhs; z -= rhs; return *this; }
-            vec3<T>& operator/=(T rhs) { x /= rhs; y /= rhs; z /= rhs; return *this; }
-            vec3<T>& operator*=(T rhs) { x *= rhs; y *= rhs; z *= rhs; return *this; }
-            vec3<T> operator-() const { return vec3<T>(-x, -y, -z); }
-            T operator[](u8 axis) const { return (&x)[axis]; }
-            T& operator[](u8 axis) { return (&x)[axis]; }
+            const_result operator+(base_type rhs) const { return const_result(x + rhs, y + rhs, z + rhs); }
+            const_result operator-(base_type rhs) const { return const_result(x - rhs, y - rhs, z - rhs); }
+            const_result operator/(base_type rhs) const { return const_result(x / rhs, y / rhs, z / rhs); }
+            const_result operator*(base_type rhs) const { return const_result(x * rhs, y * rhs, z * rhs); }
+            vec3<T>& operator+=(base_type rhs) { x += rhs; y += rhs; z += rhs; return *this; }
+            vec3<T>& operator-=(base_type rhs) { x -= rhs; y -= rhs; z -= rhs; return *this; }
+            vec3<T>& operator/=(base_type rhs) { x /= rhs; y /= rhs; z /= rhs; return *this; }
+            vec3<T>& operator*=(base_type rhs) { x *= rhs; y *= rhs; z *= rhs; return *this; }
+            const_result operator-() const { return const_result(-x, -y, -z); }
+            base_type operator[](u8 axis) const { return (&x)[axis]; }
+            base_type& operator[](u8 axis) { return (&x)[axis]; }
 
-            T magnitudeSq() const { return x * x + y * y + z * z; }
-            T magnitude() const { return std::sqrt(x * x + y * y + z * z); }
-            vec3<T> normalized() const { return *this * (T(1) / std::sqrt(x * x + y * y + z * z)); }
-            void normalize() { T im = (T(1) / std::sqrt(x * x + y * y + z * z)); x *= im; y *= im; z *= im; }
-            template <typename R> T dot(const vec3<R>& rhs) { return x * rhs.x + y * rhs.y + z * rhs.z; }
-            template <typename R> vec3<T> cross(const vec3<R>& rhs) const {
-                return vec3<T>(
+            base_type magnitudeSq() const { return x * x + y * y + z * z; }
+            base_type magnitude() const { return std::sqrt(x * x + y * y + z * z); }
+            const_result normalized() const { return *this * (base_type(1) / std::sqrt(x * x + y * y + z * z)); }
+            void normalize() { base_type im = (base_type(1) / std::sqrt(x * x + y * y + z * z)); x *= im; y *= im; z *= im; }
+            template <typename R> base_type dot(const vec3<R>& rhs) { return x * rhs.x + y * rhs.y + z * rhs.z; }
+            template <typename R> const_result cross(const vec3<R>& rhs) const {
+                return const_result(
                     y * rhs.z - z * rhs.y,
                     z * rhs.x - x * rhs.z,
                     x * rhs.y - y * rhs.x
                 );
             }
 
-            vec2<T&> xy()       { return vec2<T&>(x, y); }
-            vec2<T>  xy() const { return vec2<T >(x, y); }
-            vec2<T&> xz()       { return vec2<T&>(x, z); }
-            vec2<T>  xz() const { return vec2<T >(x, z); }
-            vec2<T&> yx()       { return vec2<T&>(y, x); }
-            vec2<T>  yx() const { return vec2<T >(y, x); }
-            vec2<T&> yz()       { return vec2<T&>(y, z); }
-            vec2<T>  yz() const { return vec2<T >(y, z); }
-            vec2<T&> zx()       { return vec2<T&>(z, x); }
-            vec2<T>  zx() const { return vec2<T >(z, x); }
-            vec2<T&> zy()       { return vec2<T&>(z, y); }
-            vec2<T>  zy() const { return vec2<T >(z, y); }
+            vec2<base_type&> xy()       { return vec2<base_type&>(x, y); }
+            vec2<base_type > xy() const { return vec2<base_type >(x, y); }
+            vec2<base_type&> xz()       { return vec2<base_type&>(x, z); }
+            vec2<base_type > xz() const { return vec2<base_type >(x, z); }
+            vec2<base_type&> yx()       { return vec2<base_type&>(y, x); }
+            vec2<base_type > yx() const { return vec2<base_type >(y, x); }
+            vec2<base_type&> yz()       { return vec2<base_type&>(y, z); }
+            vec2<base_type > yz() const { return vec2<base_type >(y, z); }
+            vec2<base_type&> zx()       { return vec2<base_type&>(z, x); }
+            vec2<base_type > zx() const { return vec2<base_type >(z, x); }
+            vec2<base_type&> zy()       { return vec2<base_type&>(z, y); }
+            vec2<base_type > zy() const { return vec2<base_type >(z, y); }
+
+            static const_result HSV(base_type hue, base_type saturation, base_type value) {
+                base_type fC = value * saturation;
+                base_type fHPrime = fmod(hue / base_type(60.0), base_type(6.0));
+                base_type fX = fC * (base_type(1.0) - fabs(fmod(fHPrime, base_type(2.0)) - base_type(1.0)));
+                base_type fM = value - fC;
+
+                const_result rgb;
+                
+                if (base_type(0.0) <= fHPrime && fHPrime < base_type(1.0)) {
+                    rgb.x = fC;
+                    rgb.y = fX;
+                    rgb.z = T(0.0);
+                } else if (base_type(1.0) <= fHPrime && fHPrime < base_type(2.0)) {
+                    rgb.x = fX;
+                    rgb.y = fC;
+                    rgb.z = base_type(0.0);
+                } else if (base_type(2.0) <= fHPrime && fHPrime < base_type(3.0)) {
+                    rgb.x = base_type(0.0);
+                    rgb.y = fC;
+                    rgb.z = fX;
+                } else if (base_type(3.0) <= fHPrime && fHPrime < base_type(4.0)) {
+                    rgb.x = base_type(0.0);
+                    rgb.y = fX;
+                    rgb.z = fC;
+                } else if (base_type(4.0) <= fHPrime && fHPrime < base_type(5.0)) {
+                    rgb.x = fX;
+                    rgb.y = base_type(0.0);
+                    rgb.z = fC;
+                } else if (base_type(5.0) <= fHPrime && fHPrime < base_type(6.0)) {
+                    rgb.x = fC;
+                    rgb.y = base_type(0.0);
+                    rgb.z = fX;
+                } else {
+                    rgb.x = base_type(0.0);
+                    rgb.y = base_type(0.0);
+                    rgb.z = base_type(0.0);
+                }
+                
+                rgb.x += fM;
+                rgb.y += fM;
+                rgb.z += fM;
+
+                return rgb;
+            }
 
             T x, y, z;
     };
@@ -136,6 +192,8 @@ namespace utils {
     template <typename T>
     class vec4 {
         public:
+            using base_type = std::remove_reference_t<T>;
+            using const_result = vec4<base_type>;
             static_assert(
                 std::is_integral_v<std::remove_reference_t<T>> || std::is_floating_point_v<std::remove_reference_t<T>>,
                 "vec4 expects template T to be integral or floating point type"
@@ -148,16 +206,19 @@ namespace utils {
             vec4(const vec3<R>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z), w(T(0)) {}
 
             template <typename R>
+            vec4(const vec3<R>& rhs, R _w) : x(rhs.x), y(rhs.y), z(rhs.z), w(_w) {}
+
+            template <typename R>
             vec4(const vec4<R>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z), w(rhs.w) {}
 
-            template <typename R> vec4<T> operator+(const vec4<R>& rhs) const { return vec4<T>(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w); }
-            template <typename R> vec4<T> operator-(const vec4<R>& rhs) const { return vec4<T>(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w); }
-            template <typename R> vec4<T> operator/(const vec4<R>& rhs) const { return vec4<T>(x / rhs.x, y / rhs.y, z / rhs.z, w / rhs.w); }
-            template <typename R> vec4<T> operator*(const vec4<R>& rhs) const { return vec4<T>(x * rhs.x, y * rhs.y, z * rhs.z, w * rhs.w); }
-            template <typename R> vec4<T> operator+(const vec3<R>& rhs) const { return vec4<T>(x + rhs.x, y + rhs.y, z + rhs.z, w); }
-            template <typename R> vec4<T> operator-(const vec3<R>& rhs) const { return vec4<T>(x - rhs.x, y - rhs.y, z - rhs.z, w); }
-            template <typename R> vec4<T> operator/(const vec3<R>& rhs) const { return vec4<T>(x / rhs.x, y / rhs.y, z / rhs.z, w); }
-            template <typename R> vec4<T> operator*(const vec3<R>& rhs) const { return vec4<T>(x * rhs.x, y * rhs.y, z * rhs.z, w); }
+            template <typename R> const_result operator+(const vec4<R>& rhs) const { return const_result(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w); }
+            template <typename R> const_result operator-(const vec4<R>& rhs) const { return const_result(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w); }
+            template <typename R> const_result operator/(const vec4<R>& rhs) const { return const_result(x / rhs.x, y / rhs.y, z / rhs.z, w / rhs.w); }
+            template <typename R> const_result operator*(const vec4<R>& rhs) const { return const_result(x * rhs.x, y * rhs.y, z * rhs.z, w * rhs.w); }
+            template <typename R> const_result operator+(const vec3<R>& rhs) const { return const_result(x + rhs.x, y + rhs.y, z + rhs.z, w); }
+            template <typename R> const_result operator-(const vec3<R>& rhs) const { return const_result(x - rhs.x, y - rhs.y, z - rhs.z, w); }
+            template <typename R> const_result operator/(const vec3<R>& rhs) const { return const_result(x / rhs.x, y / rhs.y, z / rhs.z, w); }
+            template <typename R> const_result operator*(const vec3<R>& rhs) const { return const_result(x * rhs.x, y * rhs.y, z * rhs.z, w); }
             template <typename R> vec4<T> operator+=(const vec4<R>& rhs) { x += rhs.x; y += rhs.y; z += rhs.z; w += rhs.w; return *this; }
             template <typename R> vec4<T> operator-=(const vec4<R>& rhs) { x -= rhs.x; y -= rhs.y; z -= rhs.z; w -= rhs.w; return *this; }
             template <typename R> vec4<T> operator/=(const vec4<R>& rhs) { x /= rhs.x; y /= rhs.y; z /= rhs.z; w /= rhs.w; return *this; }
@@ -166,40 +227,44 @@ namespace utils {
             template <typename R> vec4<T> operator-=(const vec3<R>& rhs) { x -= rhs.x; y -= rhs.y; z -= rhs.z; return *this; }
             template <typename R> vec4<T> operator/=(const vec3<R>& rhs) { x /= rhs.x; y /= rhs.y; z /= rhs.z; return *this; }
             template <typename R> vec4<T> operator*=(const vec3<R>& rhs) { x *= rhs.x; y *= rhs.y; z *= rhs.z; return *this; }
-            vec4<T> operator+(T rhs) const { return vec4<T>(x + rhs, y + rhs, z + rhs, w + rhs); }
-            vec4<T> operator-(T rhs) const { return vec4<T>(x - rhs, y - rhs, z - rhs, w - rhs); }
-            vec4<T> operator/(T rhs) const { return vec4<T>(x / rhs, y / rhs, z / rhs, w / rhs); }
-            vec4<T> operator*(T rhs) const { return vec4<T>(x * rhs, y * rhs, z * rhs, w * rhs); }
-            vec4<T> operator+=(T rhs) { x += rhs; y += rhs; z += rhs; w += rhs; return *this; }
-            vec4<T> operator-=(T rhs) { x -= rhs; y -= rhs; z -= rhs; w -= rhs; return *this; }
-            vec4<T> operator/=(T rhs) { x /= rhs; y /= rhs; z /= rhs; w /= rhs; return *this; }
-            vec4<T> operator*=(T rhs) { x *= rhs; y *= rhs; z *= rhs; w *= rhs; return *this; }
-            vec4<T> operator-() const { return vec4<T>(-x, -y, -z, -w); }
-            T operator[](u8 axis) const { return (&x)[axis]; }
-            T& operator[](u8 axis) { return (&x)[axis]; }
-            operator vec3<T&>() { return vec3<T&>(x, y, z); }
-            operator vec3<T>() const { return vec3<T>(x, y, z); }
+            const_result operator+(base_type rhs) const { return const_result(x + rhs, y + rhs, z + rhs, w + rhs); }
+            const_result operator-(base_type rhs) const { return const_result(x - rhs, y - rhs, z - rhs, w - rhs); }
+            const_result operator/(base_type rhs) const { return const_result(x / rhs, y / rhs, z / rhs, w / rhs); }
+            const_result operator*(base_type rhs) const { return const_result(x * rhs, y * rhs, z * rhs, w * rhs); }
+            vec4<T> operator+=(base_type rhs) { x += rhs; y += rhs; z += rhs; w += rhs; return *this; }
+            vec4<T> operator-=(base_type rhs) { x -= rhs; y -= rhs; z -= rhs; w -= rhs; return *this; }
+            vec4<T> operator/=(base_type rhs) { x /= rhs; y /= rhs; z /= rhs; w /= rhs; return *this; }
+            vec4<T> operator*=(base_type rhs) { x *= rhs; y *= rhs; z *= rhs; w *= rhs; return *this; }
+            const_result operator-() const { return const_result(-x, -y, -z, -w); }
+            base_type operator[](u8 axis) const { return (&x)[axis]; }
+            base_type& operator[](u8 axis) { return (&x)[axis]; }
+            operator vec3<base_type&>() { return vec3<base_type&>(x, y, z); }
+            operator vec3<base_type>() const { return vec3<base_type>(x, y, z); }
 
-            T magnitudeSq() const { return x * x + y * y + z * z + w * w; }
-            T magnitude() const { return std::sqrt(x * x + y * y + z * z + w * w); }
-            vec4<T> normalized() const { return *this * (T(1) / std::sqrt(x * x + y * y + z * z + w * w)); }
-            void normalize() { T im = (T(1) / std::sqrt(x * x + y * y + z * z)); x *= im; y *= im; z *= im; w *= im; }
-            template <typename R> T dot(const vec4<R>& rhs) { return x * rhs.x + y * rhs.y + z * rhs.z + w * rhs.w; }
+            base_type magnitudeSq() const { return x * x + y * y + z * z + w * w; }
+            base_type magnitude() const { return std::sqrt(x * x + y * y + z * z + w * w); }
+            const_result normalized() const { return *this * (base_type(1) / std::sqrt(x * x + y * y + z * z + w * w)); }
+            void normalize() { base_type im = (base_type(1) / std::sqrt(x * x + y * y + z * z)); x *= im; y *= im; z *= im; w *= im; }
+            template <typename R> base_type dot(const vec4<R>& rhs) { return x * rhs.x + y * rhs.y + z * rhs.z + w * rhs.w; }
 
-            vec2<T&> xy()       { return vec2<T&>(x, y); }
-            vec2<T>  xy() const { return vec2<T >(x, y); }
-            vec2<T&> xz()       { return vec2<T&>(x, z); }
-            vec2<T>  xz() const { return vec2<T >(x, z); }
-            vec2<T&> yx()       { return vec2<T&>(y, x); }
-            vec2<T>  yx() const { return vec2<T >(y, x); }
-            vec2<T&> yz()       { return vec2<T&>(y, z); }
-            vec2<T>  yz() const { return vec2<T >(y, z); }
-            vec2<T&> zx()       { return vec2<T&>(z, x); }
-            vec2<T>  zx() const { return vec2<T >(z, x); }
-            vec2<T&> zy()       { return vec2<T&>(z, y); }
-            vec2<T>  zy() const { return vec2<T >(z, y); }
-            vec3<T&> xyz()       { return vec3<T&>(x, y, z); }
-            vec3<T>  xyz() const { return vec3<T >(x, y, z); }
+            vec2<base_type&> xy()       { return vec2<base_type&>(x, y); }
+            vec2<base_type>  xy() const { return vec2<base_type >(x, y); }
+            vec2<base_type&> xz()       { return vec2<base_type&>(x, z); }
+            vec2<base_type>  xz() const { return vec2<base_type >(x, z); }
+            vec2<base_type&> yx()       { return vec2<base_type&>(y, x); }
+            vec2<base_type>  yx() const { return vec2<base_type >(y, x); }
+            vec2<base_type&> yz()       { return vec2<base_type&>(y, z); }
+            vec2<base_type>  yz() const { return vec2<base_type >(y, z); }
+            vec2<base_type&> zx()       { return vec2<base_type&>(z, x); }
+            vec2<base_type>  zx() const { return vec2<base_type >(z, x); }
+            vec2<base_type&> zy()       { return vec2<base_type&>(z, y); }
+            vec2<base_type>  zy() const { return vec2<base_type >(z, y); }
+            vec3<base_type&> xyz()       { return vec3<base_type&>(x, y, z); }
+            vec3<base_type>  xyz() const { return vec3<base_type >(x, y, z); }
+
+            static const_result HSV(base_type hue, base_type saturation, base_type value, base_type alpha) {
+                return const_result(vec3<base_type>::HSV(hue, saturation, value), alpha);
+            }
 
             T x, y, z, w;
     };
