@@ -1,4 +1,4 @@
-#include <utils/Allocator.h>
+#include <utils/Allocator.hpp>
 #include <utils/Timer.h>
 
 #include <vector>
@@ -26,7 +26,9 @@ class TestAllocator : public FixedAllocator<u32> {
 
 class TestPagedAllocator : public PagedAllocator<u32, TestAllocator> {
     public:
-        TestPagedAllocator(u32 a, u32 b = 0) : PagedAllocator<u32, TestAllocator>(a, b) {
+        TestPagedAllocator(u32 a, u32 b = 0) : PagedAllocator<u32, TestAllocator>([a, b](){
+            return new TestAllocator(a, b);
+        }) {
         }
 
         virtual ~TestPagedAllocator() {

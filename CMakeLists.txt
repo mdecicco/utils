@@ -33,7 +33,7 @@ macro(add_sources group dir)
     unset(_all) 
 endmacro(add_sources) 
 
-add_sources("src" ".") 
+add_sources("src" ".")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 

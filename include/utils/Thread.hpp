@@ -81,4 +81,71 @@ namespace utils {
             cv.wait(l, [&count]{ return count == 0; });
         }
     }
+    
+    template <typename T, typename F>
+    void sThreadPool::processArray(T* arr, u32 arrSize, u32 batchSize, F&& cb) {
+        static_assert(std::is_invocable_v<F, T*, u32, u32>, "ThreadPool::processArray<T, F>: F must be a callable object with the signature void (T*, u32, u32)");
+        if (batchSize > arrSize) {
+            cb(arr, 0, arrSize);
+        } else {
+            std::atomic<u32> count = 0;
+            std::condition_variable cv;
+            std::mutex m;
+
+            m_jobMutex.lock();
+            for (u32 i = 0;i < arrSize;i += batchSize, count++) {
+                m_pending.push(new (m_jobAllocator.alloc(1)) Job(
+                    [&arr, i, batchSize, arrSize, cb, &cv, &m, &count]{
+                        u32 viewSize = batchSize;
+                        if (i + batchSize >= arrSize) viewSize = arrSize - i;
+                        cb(arr, i, i + viewSize);
+                        std::lock_guard<std::mutex> l(m);
+                        count--;
+                        cv.notify_all();
+                    }
+                ));
+            }
+            m_jobMutex.unlock();
+            m_workCondition.notify_all();
+
+            std::unique_lock<std::mutex> l(m);
+            cv.wait(l, [&count]{ return count == 0; });
+        }
+    }
+
+    template <typename T, typename F>
+    void sThreadPool::processArray(T* arr, u32 arrSize, u32 minBatchSize, u32 maxBatchSize, F&& cb) {
+        static_assert(std::is_invocable_v<F, T*, u32, u32>, "ThreadPool::processArray<T, F>: F must be a callable object with the signature void (T*, u32, u32)");
+
+        u32 batchSize = arrSize / Thread::MaxHardwareThreads();
+        if (batchSize < minBatchSize) batchSize = minBatchSize;
+        else if (batchSize > maxBatchSize) batchSize = maxBatchSize;
+
+        if (batchSize > arrSize) {
+            cb(arr, 0, arrSize);
+        } else {
+            std::atomic<u32> count = 0;
+            std::condition_variable cv;
+            std::mutex m;
+
+            m_jobMutex.lock();
+            for (u32 i = 0;i < arrSize;i += batchSize, count++) {
+                m_pending.push(new (m_jobAllocator.alloc(1)) Job(
+                    [&arr, i, batchSize, arrSize, cb, &cv, &m, &count]{
+                        u32 viewSize = batchSize;
+                        if (i + batchSize >= arrSize) viewSize = arrSize - i;
+                        cb(arr, i, i + viewSize);
+                        std::lock_guard<std::mutex> l(m);
+                        count--;
+                        cv.notify_all();
+                    }
+                ));
+            }
+            m_jobMutex.unlock();
+            m_workCondition.notify_all();
+
+            std::unique_lock<std::mutex> l(m);
+            cv.wait(l, [&count]{ return count == 0; });
+        }
+    }
 };

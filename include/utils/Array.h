@@ -207,7 +207,7 @@ namespace utils {
             ArrayView<T> view(u32 from, u32 count = UINT_MAX);
 
             void clear(bool doFreeMem = false);
-            void reserve(u32 count);
+            void reserve(u32 count, bool doExpandSize = false);
             u32 size() const;
             u32 capacity() const;
 

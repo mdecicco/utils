@@ -1,4 +1,4 @@
-#include <utils/Math.h>
+#include <utils/Math.hpp>
 #include <cmath>
 
 namespace utils {

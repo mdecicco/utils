@@ -106,6 +106,7 @@ namespace utils {
 
     void Worker::run() {
         printf("Worker %d: Running on CPU %d.\n", m_id, Thread::CurrentCpuIndex());
+        fflush(stdout);
 
         sThreadPool* tp = ThreadPool::Get();
         while (!m_doStop) {
@@ -118,6 +119,7 @@ namespace utils {
             }
         }
         printf("Worker(id: %d, cpu: %d) terminated.\n", m_id, Thread::CurrentCpuIndex());
+        fflush(stdout);
     }
 
     
