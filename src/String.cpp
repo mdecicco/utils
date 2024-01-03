@@ -460,8 +460,33 @@ namespace utils {
 
         return out;
     }
+    
+    Array<String> String::split(const String& delimiter) const {
+        Array<String> out;
+        u32 slen = delimiter.size();
+        if (slen == 0 || slen > m_len) return out;
 
-    Array<u32>String:: indicesOf(const String& str) const {
+        Array<char> buf;
+
+        for (u32 i = 0;i < m_len;i++) {
+            bool match = true;
+            for (u32 j = 0;j < slen && match;j++) match = m_data[i + j] == delimiter[j];
+
+            if (!match) {
+                buf.push(m_data[i]);
+            } else {
+                out.push(String(buf.data(), buf.size()));
+                buf.clear(false);
+                i += slen - 1;
+            }
+        }
+
+        if (buf.size() > 0) out.push(String(buf.data(), buf.size()));
+
+        return out;
+    }
+
+    Array<u32> String::indicesOf(const String& str) const {
         Array<u32> out;
         if (str.m_len == 0 || str.m_len > m_len) return out;
 

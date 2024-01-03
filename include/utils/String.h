@@ -102,6 +102,7 @@ namespace utils {
              * @returns Array of substrings which were separated by any of the specified delimiters
              */
             Array<String> split(const char* delimiter, const char* notBetween = nullptr, u32 maxCount = 0) const;
+            Array<String> split(const String& delimiter) const;
             
             Array<u32> indicesOf(const String& str) const;
             Array<u32> indicesOf(const char* str) const;
