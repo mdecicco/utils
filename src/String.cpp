@@ -126,17 +126,20 @@ namespace utils {
             throw std::exception("Attempted to modify read-only string");
         }
 
-        u32 cap = u32(rhs.size() >= 32 ? rhs.size() + 32 : 32);
-        if (rhs.size() > 0 && rhs.size() < m_capacity) {
+        u32 cap = u32(rhs.m_len >= 32 ? rhs.m_len + 32 : 32);
+        if (rhs.m_len > 0 && rhs.m_len < m_capacity) {
             memcpy(m_data, rhs.m_data, rhs.m_len);
             m_len = rhs.m_len;
             m_data[m_len] = 0;
             resize(cap);
-        } else {
+        } else if (rhs.m_len > 0) {
             resize(cap);
             memcpy(m_data, rhs.m_data, rhs.m_len);
             m_len = rhs.m_len;
             m_data[m_len] = 0;
+        } else if (m_len > 0) {
+            m_len = 0;
+            if (m_data) m_data[0] = 0;
         }
 
         return *this;
