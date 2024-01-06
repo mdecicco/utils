@@ -143,20 +143,7 @@ namespace utils {
     }
 
     String& String::operator +=(const String& rhs) {
-        if (m_readOnly) {
-            throw std::exception("Attempted to modify read-only string");
-        }
-        
-        if ((m_len + rhs.size() + 1) < m_capacity) {
-            memcpy(m_data + m_len, rhs.m_data, rhs.m_len);
-            m_len += rhs.m_len;
-            m_data[m_len] = 0;
-        } else {
-            resize(m_len + rhs.m_len + 32);
-            memcpy(m_data + m_len, rhs.m_data, rhs.m_len);
-            m_len += rhs.m_len;
-            m_data[m_len] = 0;
-        }
+        append(rhs);
         return *this;
     }
 
@@ -312,6 +299,57 @@ namespace utils {
         }
 
         return out;
+    }
+
+    void String::append(const String& rhs) {
+        if (m_readOnly) {
+            throw std::exception("Attempted to modify read-only string");
+        }
+        
+        if ((m_len + rhs.size() + 1) < m_capacity) {
+            memcpy(m_data + m_len, rhs.m_data, rhs.m_len);
+            m_len += rhs.m_len;
+            m_data[m_len] = 0;
+        } else {
+            resize(m_len + rhs.m_len + 32);
+            memcpy(m_data + m_len, rhs.m_data, rhs.m_len);
+            m_len += rhs.m_len;
+            m_data[m_len] = 0;
+        }
+    }
+    
+    void String::append(const char* rhs, u32 len) {
+        if (m_readOnly) {
+            throw std::exception("Attempted to modify read-only string");
+        }
+        
+        if ((m_len + len + 1) < m_capacity) {
+            memcpy(m_data + m_len, rhs, len);
+            m_len += len;
+            m_data[m_len] = 0;
+        } else {
+            resize(m_len + len + 32);
+            memcpy(m_data + m_len, rhs, len);
+            m_len += len;
+            m_data[m_len] = 0;
+        }
+    }
+    
+    void String::append(const void* rhs, u32 len) {
+        if (m_readOnly) {
+            throw std::exception("Attempted to modify read-only string");
+        }
+        
+        if ((m_len + len + 1) < m_capacity) {
+            memcpy(m_data + m_len, rhs, len);
+            m_len += len;
+            m_data[m_len] = 0;
+        } else {
+            resize(m_len + len + 32);
+            memcpy(m_data + m_len, rhs, len);
+            m_len += len;
+            m_data[m_len] = 0;
+        }
     }
 
     String String::clone() const {

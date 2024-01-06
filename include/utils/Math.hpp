@@ -246,6 +246,20 @@ namespace utils {
             const_result normalized() const { return *this * (base_type(1) / std::sqrt(x * x + y * y + z * z + w * w)); }
             void normalize() { base_type im = (base_type(1) / std::sqrt(x * x + y * y + z * z)); x *= im; y *= im; z *= im; w *= im; }
             template <typename R> base_type dot(const vec4<R>& rhs) { return x * rhs.x + y * rhs.y + z * rhs.z + w * rhs.w; }
+            template <typename R> vec3<base_type> cross(const vec3<R>& rhs) const {
+                return vec3<base_type>(
+                    y * rhs.z - z * rhs.y,
+                    z * rhs.x - x * rhs.z,
+                    x * rhs.y - y * rhs.x
+                );
+            }
+            template <typename R> vec3<base_type> cross(const vec4<R>& rhs) const {
+                return vec3<base_type>(
+                    y * rhs.z - z * rhs.y,
+                    z * rhs.x - x * rhs.z,
+                    x * rhs.y - y * rhs.x
+                );
+            }
 
             vec2<base_type&> xy()       { return vec2<base_type&>(x, y); }
             vec2<base_type>  xy() const { return vec2<base_type >(x, y); }
