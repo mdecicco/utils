@@ -311,12 +311,12 @@ namespace utils {
 
             static quat<T> FromAxisAngle(const vec3<T>& axis, T angle) {
                 T ha = angle * T(0.5);
-                T s = std::sin(angle * T(0.5));
+                T s = std::sin(ha);
                 return quat<T>(
                     axis.x * s,
                     axis.y * s,
                     axis.z * s,
-                    std::cos(angle * T(0.5))
+                    std::cos(ha)
                 );
             }
 
