@@ -655,9 +655,9 @@ namespace utils {
 
     template <typename T>
     quat<T> quat<T>::FromMatrix(const mat3<T>& m) {
-        auto getMinParamIdx = [](f32 a, f32 b, f32 c, f32 d) {
+        auto getMinParamIdx = [](T a, T b, T c, T d) {
             u8 idx = 0;
-            f32 min = a;
+            T min = a;
             
             if (b < min) {
                 idx = 1;
@@ -678,17 +678,17 @@ namespace utils {
         };
 
         quat<T> out;
-        f32 xx = m.x.x;
-        f32 yy = m.y.y;
-        f32 zz = m.z.z;
-        f32 sum = xx + yy + zz;
+        T xx = m.x.x;
+        T yy = m.y.y;
+        T zz = m.z.z;
+        T sum = xx + yy + zz;
 
         u8 minIdx = getMinParamIdx(sum, xx, yy, zz);
 
         switch (minIdx) {
             case 0: {
-                f32 unk = sqrtf(sum + 1.0f) * 0.5f;
-                f32 unk1 = 0.25f / unk;
+                T unk = std::sqrt(sum + T(1.0)) * T(0.5);
+                T unk1 = T(0.25) / unk;
 
                 out.axis.x = (m.y.z - m.z.y) * unk1;
                 out.axis.y = (m.z.x - m.x.z) * unk1;
@@ -697,8 +697,8 @@ namespace utils {
                 break;
             }
             case 1: {
-                f32 unk = sqrtf(((m.x.x + m.x.x) - sum) + 1.0f) * 0.5f;
-                f32 unk1 = 0.25f / unk;
+                T unk = std::sqrt(((m.x.x + m.x.x) - sum) + T(1.0)) * T(0.5);
+                T unk1 = T(0.25) / unk;
 
                 out.axis.x = unk;
                 out.axis.y = (m.x.y + m.y.x) * unk1;
@@ -707,8 +707,8 @@ namespace utils {
                 break;
             }
             case 2: {
-                f32 unk = sqrtf(((m.y.y + m.y.y) - sum) + 1.0) * 0.5;
-                f32 unk1 = 0.25 / unk;
+                T unk = std::sqrt(((m.y.y + m.y.y) - sum) + T(1.0)) * T(0.5);
+                T unk1 = T(0.25) / unk;
 
                 out.axis.x = (m.x.y + m.y.x) * unk1;
                 out.axis.y = unk;
@@ -717,8 +717,8 @@ namespace utils {
                 break;
             }
             case 3: {
-                f32 unk = sqrtf(((m.z.z + m.z.z) - sum) + 1.0f) * 0.5f;
-                f32 unk1 = 0.25f / unk;
+                T unk = std::sqrt(((m.z.z + m.z.z) - sum) + T(1.0)) * T(0.5);
+                T unk1 = T(0.25) / unk;
 
                 out.axis.x = (m.z.x + m.x.z) * unk1;
                 out.axis.y = (m.y.z + m.z.y) * unk1;
