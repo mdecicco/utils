@@ -156,7 +156,11 @@ namespace utils {
         if (m_used == 0 || !m_data) return false;
 
         FILE* fp = nullptr;
+        #ifdef _MSC_VER
         fopen_s(&fp, path.c_str(), "wb");
+        #else
+        fp = fopen(path.c_str(), "wb");
+        #endif
         if (!fp) return false;
 
         if (fwrite(m_data, m_used, 1, fp) != 1) {
@@ -170,7 +174,11 @@ namespace utils {
 
     Buffer* Buffer::FromFile(const String& path) {
         FILE* fp = nullptr;
-        fopen_s(&fp, path.c_str(), "rb");
+        #ifdef _MSC_VER
+        fopen_s(&fp, path.c_str(), "wb");
+        #else
+        fp = fopen(path.c_str(), "wb");
+        #endif
         if (!fp) return nullptr;
 
         fseek(fp, 0, SEEK_END);

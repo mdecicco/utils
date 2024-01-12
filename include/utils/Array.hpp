@@ -50,6 +50,18 @@ namespace utils {
     }
 
     template <typename T>
+    ArrayIterator<T>& ArrayIterator<T>::operator+=(const difference_type& diff) {
+        m_ptr += diff;
+        return *this;
+    }
+
+    template <typename T>
+    ArrayIterator<T>& ArrayIterator<T>::operator-=(const difference_type& diff) {
+        m_ptr -= diff;
+        return *this;
+    }
+
+    template <typename T>
     typename ArrayIterator<T>::reference ArrayIterator<T>::operator[] (const difference_type& offset) const {
         return m_ptr[offset];
     }

@@ -3,7 +3,12 @@
 #include <initializer_list>
 #include <iterator>
 #include <type_traits>
+
+#ifdef _MSC_VER
 #include <xtr1common>
+#else
+#include <limits.h>
+#endif
 
 namespace utils {
     template <typename T>
@@ -30,6 +35,8 @@ namespace utils {
 
             ArrayIterator<T> operator+(const difference_type& diff) const;
             ArrayIterator<T> operator-(const difference_type& diff) const;
+            ArrayIterator<T>& operator+=(const difference_type& diff);
+            ArrayIterator<T>& operator-=(const difference_type& diff);
 
             reference operator[] (const difference_type& offset) const;
 

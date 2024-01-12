@@ -485,34 +485,42 @@ namespace utils {
             return out;
         #else
         #endif
+
+        return Array<MonitorInfo>();
     }
 
     void Window::onResize() {
-        RECT rect;
-        if (GetWindowRect(m_windowHandle, &rect)) {
-            m_width = rect.right - rect.left;
-            m_height = rect.bottom - rect.top;
-            m_posX = rect.left;
-            m_posY = rect.top;
+        #ifdef _WIN32
+            RECT rect;
+            if (GetWindowRect(m_windowHandle, &rect)) {
+                m_width = rect.right - rect.left;
+                m_height = rect.bottom - rect.top;
+                m_posX = rect.left;
+                m_posY = rect.top;
 
-            m_listeners.each([this](IInputHandler* h) {
-                h->onWindowResize(this, m_width, m_height);
-            });
-        }
+                m_listeners.each([this](IInputHandler* h) {
+                    h->onWindowResize(this, m_width, m_height);
+                });
+            }
+        #else
+        #endif
     }
 
     void Window::onMove() {
-        RECT rect;
-        if (GetWindowRect(m_windowHandle, &rect)) {
-            m_width = rect.right - rect.left;
-            m_height = rect.bottom - rect.top;
-            m_posX = rect.left;
-            m_posY = rect.top;
+        #ifdef _WIN32
+            RECT rect;
+            if (GetWindowRect(m_windowHandle, &rect)) {
+                m_width = rect.right - rect.left;
+                m_height = rect.bottom - rect.top;
+                m_posX = rect.left;
+                m_posY = rect.top;
 
-            m_listeners.each([this](IInputHandler* h) {
-                h->onWindowMove(this, m_posX, m_posY);
-            });
-        }
+                m_listeners.each([this](IInputHandler* h) {
+                    h->onWindowMove(this, m_posX, m_posY);
+                });
+            }
+        #else
+        #endif
     }
     
     void Window::onClose() {
@@ -520,7 +528,10 @@ namespace utils {
     }
     
     void Window::onDestroy() {
-        m_windowHandle = nullptr;
+        #ifdef _WIN32
+            m_windowHandle = nullptr;
+        #else
+        #endif
         m_isOpen = false;
     }
 

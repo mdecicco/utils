@@ -1,7 +1,12 @@
 #pragma once
 #include <utils/Types.h>
 
+#ifdef _MSC_VER
 #include <xtr1common>
+#else
+#include <limits.h>
+#endif
+
 #include <cmath>
 
 #undef near
@@ -44,7 +49,7 @@ namespace utils {
                 "vec2 expects template T to be integral or floating point type"
             );
 
-            vec2() requires !std::is_reference_v<T> : x(T(0)), y(T(0)) {}
+            vec2() requires (!std::is_reference_v<T>) : x(T(0)), y(T(0)) {}
             vec2(T _x, T _y) : x(_x), y(_y) {}
 
             template <typename R>
@@ -89,7 +94,7 @@ namespace utils {
                 "vec3 expects template T to be integral or floating point type"
             );
 
-            vec3() requires !std::is_reference_v<T> : x(T(0)), y(T(0)), z(T(0)) {}
+            vec3() requires (!std::is_reference_v<T>) : x(T(0)), y(T(0)), z(T(0)) {}
             vec3(T _x, T _y, T _z) : x(_x), y(_y), z(_z) {}
 
             template <typename R>
@@ -199,7 +204,7 @@ namespace utils {
                 "vec4 expects template T to be integral or floating point type"
             );
 
-            vec4() requires !std::is_reference_v<T> : x(T(0)), y(T(0)), z(T(0)), w(T(0)) {}
+            vec4() requires (!std::is_reference_v<T>) : x(T(0)), y(T(0)), z(T(0)), w(T(0)) {}
             vec4(T _x, T _y, T _z, T _w) : x(_x), y(_y), z(_z), w(_w) {}
 
             template <typename R>

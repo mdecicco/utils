@@ -1,5 +1,7 @@
 #include <utils/robin_hood.h>
+#ifdef _MSC_VER
 #include <malloc.h>
+#endif
 #include <memory.h>
 
 namespace robin_hood {

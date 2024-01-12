@@ -60,7 +60,6 @@ namespace utils {
 
     template <typename T>
     void PerThreadSingleton<T>::Destroy(thread_id tid) {
-        thread_id tid = Thread::Current();
         auto it = instance->m_instanceMap.find(tid);
         if (it == instance->m_instanceMap.end()) return;
         delete it->second;

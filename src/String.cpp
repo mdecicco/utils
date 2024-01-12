@@ -4,6 +4,7 @@
 #include <utils/Array.hpp>
 #include <utils/robin_hood.h>
 
+#include <exception>
 #include <stdarg.h>
 
 namespace std {
@@ -80,7 +81,7 @@ namespace utils {
 
     String& String::operator =(const char* rhs) {
         if (m_readOnly) {
-            throw std::exception("Attempted to modify read-only string");
+            throw "Attempted to modify read-only string";
         }
 
         u32 slen = (u32)strlen(rhs);
@@ -102,7 +103,7 @@ namespace utils {
 
     String& String::operator =(const std::string& rhs) {
         if (m_readOnly) {
-            throw std::exception("Attempted to modify read-only string");
+            throw "Attempted to modify read-only string";
         }
 
         u32 cap = u32(rhs.length() >= 32 ? rhs.length() + 32 : 32);
@@ -123,7 +124,7 @@ namespace utils {
 
     String& String::operator =(const String& rhs) {
         if (m_readOnly) {
-            throw std::exception("Attempted to modify read-only string");
+            throw "Attempted to modify read-only string";
         }
 
         u32 cap = u32(rhs.m_len >= 32 ? rhs.m_len + 32 : 32);
@@ -158,7 +159,7 @@ namespace utils {
 
     String& String::operator +=(char ch) {
         if (m_readOnly) {
-            throw std::exception("Attempted to modify read-only string");
+            throw "Attempted to modify read-only string";
         }
 
         if ((m_len + 1) >= m_capacity) resize(m_capacity + 32);
@@ -194,7 +195,7 @@ namespace utils {
 
     void String::replaceAll(const String& str, const String& with) {
         if (m_readOnly) {
-            throw std::exception("Attempted to modify read-only string");
+            throw "Attempted to modify read-only string";
         }
         
         u32 slen = str.size();
@@ -231,7 +232,7 @@ namespace utils {
 
     void String::replaceAll(const char* str, const String& with) {
         if (m_readOnly) {
-            throw std::exception("Attempted to modify read-only string");
+            throw "Attempted to modify read-only string";
         }
         
         u32 slen = (u32)strlen(str);
@@ -268,7 +269,7 @@ namespace utils {
 
     void String::replaceAll(char ch, char with) {
         if (m_readOnly) {
-            throw std::exception("Attempted to modify read-only string");
+            throw "Attempted to modify read-only string";
         }
         
         for (u32 i = 0;i < m_len;i++) {
@@ -306,7 +307,7 @@ namespace utils {
 
     void String::append(const String& rhs) {
         if (m_readOnly) {
-            throw std::exception("Attempted to modify read-only string");
+            throw "Attempted to modify read-only string";
         }
         
         if ((m_len + rhs.size() + 1) < m_capacity) {
@@ -323,7 +324,7 @@ namespace utils {
     
     void String::append(const char* rhs, u32 len) {
         if (m_readOnly) {
-            throw std::exception("Attempted to modify read-only string");
+            throw "Attempted to modify read-only string";
         }
         
         if ((m_len + len + 1) < m_capacity) {
@@ -340,7 +341,7 @@ namespace utils {
     
     void String::append(const void* rhs, u32 len) {
         if (m_readOnly) {
-            throw std::exception("Attempted to modify read-only string");
+            throw "Attempted to modify read-only string";
         }
         
         if ((m_len + len + 1) < m_capacity) {
@@ -681,7 +682,7 @@ namespace utils {
 
     void String::resize(u32 cap) {
         if (m_readOnly) {
-            throw std::exception("Attempted to modify read-only string");
+            throw "Attempted to modify read-only string";
         }
 
         m_capacity = cap;
