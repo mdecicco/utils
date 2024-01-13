@@ -446,7 +446,7 @@ namespace utils {
 
         if (idx == -1) return;
 
-        m_listeners.remove(idx);
+        m_listeners.remove(u32(idx));
     }
 
     bool Window::pollEvents() {
