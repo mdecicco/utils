@@ -175,9 +175,9 @@ namespace utils {
     Buffer* Buffer::FromFile(const String& path) {
         FILE* fp = nullptr;
         #ifdef _MSC_VER
-        fopen_s(&fp, path.c_str(), "wb");
+        fopen_s(&fp, path.c_str(), "rb");
         #else
-        fp = fopen(path.c_str(), "wb");
+        fp = fopen(path.c_str(), "rb");
         #endif
         if (!fp) return nullptr;
 
