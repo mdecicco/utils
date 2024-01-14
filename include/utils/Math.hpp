@@ -1,11 +1,8 @@
 #pragma once
 #include <utils/Types.h>
 
-#ifdef _MSC_VER
-#include <xtr1common>
-#else
+#include <type_traits>
 #include <limits.h>
-#endif
 
 #include <cmath>
 
