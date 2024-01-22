@@ -3,24 +3,40 @@
     <Type Name="utils::Array&lt;*&gt;">
         <DisplayString>{{ size = {m_size}, capacity = {m_capacity} }}</DisplayString>
         <Expand>
-            <ArrayItems>
+            <IndexListItems>
                 <Size>m_size</Size>
-                <ValuePointer>m_data</ValuePointer>
-            </ArrayItems>
+                <ValueNode>m_data[$i]</ValueNode>
+            </IndexListItems>
         </Expand>
     </Type>
     <Type Name="utils::ArrayView&lt;*&gt;">
         <DisplayString>{{ size = {(m_offset >= m_target->m_size) ? 0 : ((m_offset + m_size) >= m_target->m_size ? m_target->m_size - m_offset : m_size)}, offset = {m_offset} }}</DisplayString>
         <Expand>
-            <ArrayItems>
+            <IndexListItems>
                 <Size>(m_offset >= m_target->m_size) ? 0 : ((m_offset + m_size) >= m_target->m_size ? m_target->m_size - m_offset : m_size)</Size>
-                <ValuePointer>m_target->m_data + m_offset</ValuePointer>
-            </ArrayItems>
+                <ValueNode>(m_target->m_data + m_offset)[$i]</ValueNode>
+            </IndexListItems>
         </Expand>
     </Type>
     <Type Name="utils::String">
-        <DisplayString>{m_data,[m_len]}</DisplayString>
+        <DisplayString Condition="m_readOnly">{m_data,[m_len]}</DisplayString>
+        <DisplayString Condition="!m_readOnly">{m_data,s}</DisplayString>
     </Type>
+    <Type Name="utils::vec2&lt;*&gt;"><DisplayString>{{ {x}, {y} }}</DisplayString></Type>
+    <Type Name="utils::vec2i"><DisplayString>{{ {x}, {y} }}</DisplayString></Type>
+    <Type Name="utils::vec2ui"><DisplayString>{{ {x}, {y} }}</DisplayString></Type>
+    <Type Name="utils::vec2f"><DisplayString>{{ {x}, {y} }}</DisplayString></Type>
+    <Type Name="utils::vec2d"><DisplayString>{{ {x}, {y} }}</DisplayString></Type>
+    <Type Name="utils::vec3&lt;*&gt;"><DisplayString>{{ {x}, {y}, {z} }}</DisplayString></Type>
+    <Type Name="utils::vec3i"><DisplayString>{{ {x}, {y}, {z} }}</DisplayString></Type>
+    <Type Name="utils::vec3ui"><DisplayString>{{ {x}, {y}, {z} }}</DisplayString></Type>
+    <Type Name="utils::vec3f"><DisplayString>{{ {x}, {y}, {z} }}</DisplayString></Type>
+    <Type Name="utils::vec3d"><DisplayString>{{ {x}, {y}, {z} }}</DisplayString></Type>
+    <Type Name="utils::vec4&lt;*&gt;"><DisplayString>{{ {x}, {y}, {z}, {w} }}</DisplayString></Type>
+    <Type Name="utils::vec4i"><DisplayString>{{ {x}, {y}, {z}, {w} }}</DisplayString></Type>
+    <Type Name="utils::vec4ui"><DisplayString>{{ {x}, {y}, {z}, {w} }}</DisplayString></Type>
+    <Type Name="utils::vec4f"><DisplayString>{{ {x}, {y}, {z}, {w} }}</DisplayString></Type>
+    <Type Name="utils::vec4d"><DisplayString>{{ {x}, {y}, {z}, {w} }}</DisplayString></Type>
     <Type Name="robin_hood::detail::Table&lt;*,*,*,*,*,*&gt;">
         <!--
             $T1 = bool IsFlat
