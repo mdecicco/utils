@@ -18,6 +18,8 @@ namespace utils {
 
     template <typename T, size_t ElemSz>
     T* IAllocator<T, ElemSz>::alloc(size_t count) {
+        if (count == 0) return nullptr;
+
         size_t bytes = ElemSz * count;
         if (!isDynamicallySized() && bytes > (totalCapacityBytes() - m_memUsed)) {
             // Engine::Get()->log(LogCode::insufficient_allocator_memory, bytes, totalCapacityBytes() - m_memUsed);
@@ -37,6 +39,8 @@ namespace utils {
 
     template <typename T, size_t ElemSz>
     T* IAllocator<T, ElemSz>::realloc(T* ptr, size_t count) {
+        if (count == 0) return nullptr;
+        
         size_t oldSz = getPtrSize(ptr);
         if (oldSz == 0) return nullptr;
 
