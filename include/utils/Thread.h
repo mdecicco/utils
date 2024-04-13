@@ -12,11 +12,14 @@ namespace utils {
     class Thread {
         public:
             Thread();
+            Thread(const std::function<void()>& entry);
             ~Thread();
 
             thread_id getId() const;
             void reset(const std::function<void()>& entry);
             void setAffinity(u32 cpuIdx);
+            void waitForExit();
+            bool isRunning();
 
             static thread_id Current();
             static void Sleep(u32 ms);
@@ -25,6 +28,8 @@ namespace utils {
 
         protected:
             std::thread m_thread;
+            std::mutex m_isRunningMutex;
+            bool m_isRunning;
     };
 
     class Job {
