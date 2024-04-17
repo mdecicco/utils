@@ -85,6 +85,12 @@ namespace utils {
         }
 
         u32 slen = (u32)strlen(rhs);
+        if (slen == 0) {
+            if (m_capacity > 0) memset(m_data, 0, m_capacity);
+            m_len = 0;
+            return *this;
+        }
+
         u32 cap = slen >= 32 ? slen + 32 : 32;
         if (slen > 0 && slen < m_capacity) {
             memcpy(m_data, rhs, slen);
@@ -106,6 +112,12 @@ namespace utils {
             throw "Attempted to modify read-only string";
         }
 
+        if (rhs.length() == 0) {
+            if (m_capacity > 0) memset(m_data, 0, m_capacity);
+            m_len = 0;
+            return *this;
+        }
+
         u32 cap = u32(rhs.length() >= 32 ? rhs.length() + 32 : 32);
         if (rhs.length() > 0 && rhs.length() < m_capacity) {
             memcpy(m_data, rhs.c_str(), rhs.length());
@@ -125,6 +137,12 @@ namespace utils {
     String& String::operator =(const String& rhs) {
         if (m_readOnly) {
             throw "Attempted to modify read-only string";
+        }
+
+        if (rhs.size() == 0) {
+            if (m_capacity > 0) memset(m_data, 0, m_capacity);
+            m_len = 0;
+            return *this;
         }
 
         u32 cap = u32(rhs.m_len >= 32 ? rhs.m_len + 32 : 32);
