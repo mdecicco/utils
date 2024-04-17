@@ -60,7 +60,7 @@ namespace utils {
             template <typename T>
             bool read(T& val);
 
-            static Buffer* FromFile(const String& path);
+            static Buffer* FromFile(const String& path, bool isTextFile = false);
         
         protected:
             u8* m_data;
