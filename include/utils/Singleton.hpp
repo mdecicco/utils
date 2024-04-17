@@ -60,6 +60,7 @@ namespace utils {
 
     template <typename T>
     void PerThreadSingleton<T>::Destroy(thread_id tid) {
+        std::unique_lock<std::shared_mutex> lock(instance->m_mapLock);
         auto it = instance->m_instanceMap.find(tid);
         if (it == instance->m_instanceMap.end()) return;
         delete it->second;
@@ -69,15 +70,16 @@ namespace utils {
     template <typename T>
     T* PerThreadSingleton<T>::Get() {
         thread_id tid = Thread::Current();
-        auto it = instance->m_instanceMap.find(tid);
 
-        T* a = nullptr;
-        if (it == instance->m_instanceMap.end()) {
-            a = instance->m_newInstanceFunc();
-            instance->m_instanceMap[tid] = a;
-            return a;
+        {
+            std::shared_lock<std::shared_mutex> lock(instance->m_mapLock);
+            auto it = instance->m_instanceMap.find(tid);
+            if (it != instance->m_instanceMap.end()) return it->second;
         }
 
-        return it->second;
+        std::unique_lock<std::shared_mutex> lock(instance->m_mapLock);
+        T* a = instance->m_newInstanceFunc();
+        instance->m_instanceMap[tid] = a;
+        return a;
     }
 };
