@@ -578,7 +578,7 @@ namespace utils {
             if (a == b) matchC++;
             else matchC = 0;
 
-            if (matchC == str.m_len) return i;
+            if (matchC == str.m_len) return (i + 1) - str.m_len;
         }
 
         return -1;
@@ -597,7 +597,7 @@ namespace utils {
             if (a == b) matchC++;
             else matchC = 0;
 
-            if (matchC == slen) return i;
+            if (matchC == slen) return (i + 1) - slen;
         }
 
         return -1;
@@ -622,7 +622,7 @@ namespace utils {
             if (a == b) matchC++;
             else matchC = 0;
 
-            if (matchC == str.m_len) return i;
+            if (matchC == str.m_len) return (i + 1) - str.m_len;
         }
 
         return -1;
@@ -641,7 +641,7 @@ namespace utils {
             if (a == b) matchC++;
             else matchC = 0;
             
-            if (matchC == slen) return i;
+            if (matchC == slen) return (i + 1) - slen;
         }
 
         return -1;
