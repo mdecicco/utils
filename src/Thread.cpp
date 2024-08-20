@@ -11,7 +11,13 @@ namespace utils {
     // Thread
     //
 
+    Thread::Thread(const std::function<void()>& entry) {
+        m_isRunning = false;
+        reset(entry);
+    }
+
     Thread::Thread() {
+        m_isRunning = false;
     }
 
     Thread::~Thread() {
@@ -23,8 +29,18 @@ namespace utils {
     }
 
     void Thread::reset(const std::function<void()>& entry) {
-        if (m_thread.joinable()) m_thread.join();
-        m_thread = std::thread(entry);
+        if (m_thread.joinable() && isRunning()) m_thread.join();
+        m_thread = std::thread([this, entry](){
+            this->m_isRunningMutex.lock();
+            this->m_isRunning = true;
+            this->m_isRunningMutex.unlock();
+
+            entry();
+            
+            this->m_isRunningMutex.lock();
+            this->m_isRunning = false;
+            this->m_isRunningMutex.unlock();
+        });
     }
 
     void Thread::setAffinity(u32 cpuIdx) {
@@ -61,6 +77,18 @@ namespace utils {
             else printf("SetThreadAffinityMask failed\n"); 
         }
         #endif
+    }
+
+    void Thread::waitForExit() {
+        if (!m_thread.joinable() || !isRunning()) return;
+        m_thread.join();
+    }
+
+    bool Thread::isRunning() {
+        m_isRunningMutex.lock();
+        bool result = m_isRunning;
+        m_isRunningMutex.unlock();
+        return result;
     }
 
     thread_id Thread::Current() {

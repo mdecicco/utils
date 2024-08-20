@@ -690,8 +690,8 @@ namespace utils {
         if ((m_size + arr.m_size) == 0) return Array<T>();
 
         Array<T> out(m_size + arr.m_size);
-        for (u32 i = 0;i < m_size;i++) out.m_data[i] = m_data[i];
-        for (u32 i = 0;i < arr.m_size;i++) out.m_data[i + m_size] = arr.m_data[i];
+        for (u32 i = 0;i < m_size;i++) new (&out.m_data[i]) T(m_data[i]);
+        for (u32 i = 0;i < arr.m_size;i++) new (&out.m_data[i + m_size]) T(arr.m_data[i]);
         out.m_size = m_size + arr.m_size;
 
         return out;
@@ -703,11 +703,11 @@ namespace utils {
         if ((m_size + sz) == 0) return Array<T>();
 
         Array<T> out(m_size + sz);
-        for (u32 i = 0;i < m_size;i++) out.m_data[i] = m_data[i];
+        for (u32 i = 0;i < m_size;i++) new (&out.m_data[i]) T(m_data[i]);
 
         u32 i = 0;
         for (auto ele : list) {
-            out.m_data[m_size + i] = ele;
+            new (&out.m_data[m_size + i]) T(ele);
             i++;
         }
 
@@ -720,7 +720,7 @@ namespace utils {
     void Array<T>::append(const Array<T>& arr) {
         if (arr.m_size == 0) return;
         reserve(arr.m_size);
-        for (u32 i = 0;i < arr.m_size;i++) m_data[m_size++] = arr[i];
+        for (u32 i = 0;i < arr.m_size;i++) new(&m_data[m_size++]) T(arr[i]);
     }
 
     template <typename T>
@@ -729,7 +729,7 @@ namespace utils {
         if (sz == 0) return;
         reserve(sz);
 
-        for (auto ele : list) m_data[m_size++] = ele;
+        for (auto ele : list) new (&m_data[m_size++]) T(ele);
     }
 
     template <typename T>

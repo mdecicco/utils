@@ -221,14 +221,14 @@ namespace utils {
             template <typename R> const_result operator-(const vec3<R>& rhs) const { return const_result(x - rhs.x, y - rhs.y, z - rhs.z, w); }
             template <typename R> const_result operator/(const vec3<R>& rhs) const { return const_result(x / rhs.x, y / rhs.y, z / rhs.z, w); }
             template <typename R> const_result operator*(const vec3<R>& rhs) const { return const_result(x * rhs.x, y * rhs.y, z * rhs.z, w); }
-            template <typename R> vec4<T> operator+=(const vec4<R>& rhs) { x += rhs.x; y += rhs.y; z += rhs.z; w += rhs.w; return *this; }
-            template <typename R> vec4<T> operator-=(const vec4<R>& rhs) { x -= rhs.x; y -= rhs.y; z -= rhs.z; w -= rhs.w; return *this; }
-            template <typename R> vec4<T> operator/=(const vec4<R>& rhs) { x /= rhs.x; y /= rhs.y; z /= rhs.z; w /= rhs.w; return *this; }
-            template <typename R> vec4<T> operator*=(const vec4<R>& rhs) { x *= rhs.x; y *= rhs.y; z *= rhs.z; w *= rhs.w; return *this; }
-            template <typename R> vec4<T> operator+=(const vec3<R>& rhs) { x += rhs.x; y += rhs.y; z += rhs.z; return *this; }
-            template <typename R> vec4<T> operator-=(const vec3<R>& rhs) { x -= rhs.x; y -= rhs.y; z -= rhs.z; return *this; }
-            template <typename R> vec4<T> operator/=(const vec3<R>& rhs) { x /= rhs.x; y /= rhs.y; z /= rhs.z; return *this; }
-            template <typename R> vec4<T> operator*=(const vec3<R>& rhs) { x *= rhs.x; y *= rhs.y; z *= rhs.z; return *this; }
+            template <typename R> vec4<T>& operator+=(const vec4<R>& rhs) { x += rhs.x; y += rhs.y; z += rhs.z; w += rhs.w; return *this; }
+            template <typename R> vec4<T>& operator-=(const vec4<R>& rhs) { x -= rhs.x; y -= rhs.y; z -= rhs.z; w -= rhs.w; return *this; }
+            template <typename R> vec4<T>& operator/=(const vec4<R>& rhs) { x /= rhs.x; y /= rhs.y; z /= rhs.z; w /= rhs.w; return *this; }
+            template <typename R> vec4<T>& operator*=(const vec4<R>& rhs) { x *= rhs.x; y *= rhs.y; z *= rhs.z; w *= rhs.w; return *this; }
+            template <typename R> vec4<T>& operator+=(const vec3<R>& rhs) { x += rhs.x; y += rhs.y; z += rhs.z; return *this; }
+            template <typename R> vec4<T>& operator-=(const vec3<R>& rhs) { x -= rhs.x; y -= rhs.y; z -= rhs.z; return *this; }
+            template <typename R> vec4<T>& operator/=(const vec3<R>& rhs) { x /= rhs.x; y /= rhs.y; z /= rhs.z; return *this; }
+            template <typename R> vec4<T>& operator*=(const vec3<R>& rhs) { x *= rhs.x; y *= rhs.y; z *= rhs.z; return *this; }
             const_result operator+(base_type rhs) const { return const_result(x + rhs, y + rhs, z + rhs, w + rhs); }
             const_result operator-(base_type rhs) const { return const_result(x - rhs, y - rhs, z - rhs, w - rhs); }
             const_result operator/(base_type rhs) const { return const_result(x / rhs, y / rhs, z / rhs, w / rhs); }
@@ -280,6 +280,15 @@ namespace utils {
 
             static const_result HSV(base_type hue, base_type saturation, base_type value, base_type alpha) {
                 return const_result(vec3<base_type>::HSV(hue, saturation, value), alpha);
+            }
+
+            static const_result FromU32(u32 value) {
+                return const_result(
+                    T((value & 0xFF000000) >> 24) * T(0.00392156862),
+                    T((value & 0x00FF0000) >> 16) * T(0.00392156862),
+                    T((value & 0x0000FF00) >>  8) * T(0.00392156862),
+                    T((value & 0x000000FF)      ) * T(0.00392156862)
+                );
             }
 
             T x, y, z, w;

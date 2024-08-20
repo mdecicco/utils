@@ -64,6 +64,7 @@ namespace utils {
         KEY_END             = 0x14F,
         KEY_ENTER           = 0x01C,
         KEY_ESCAPE          = 0x001,
+        KEY_GRAVE_ACCENT    = 0x0C0,
         KEY_HOME            = 0x147,
         KEY_INSERT          = 0x152,
         KEY_MENU            = 0x15D,

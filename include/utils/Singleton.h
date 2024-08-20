@@ -3,6 +3,7 @@
 #include <utils/robin_hood.h>
 
 #include <functional>
+#include <shared_mutex>
 
 namespace utils {
     template <typename T>
@@ -47,6 +48,7 @@ namespace utils {
             PerThreadSingleton(F&& creatorFunc);
 
             // Hash map of thread id -> PageAllocatorTp*
+            std::shared_mutex m_mapLock;
             robin_hood::unordered_map<thread_id, T*> m_instanceMap;
             std::function<T*()> m_newInstanceFunc;
     };

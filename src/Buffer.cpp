@@ -172,7 +172,7 @@ namespace utils {
         return true;
     }
 
-    Buffer* Buffer::FromFile(const String& path) {
+    Buffer* Buffer::FromFile(const String& path, bool isTextFile) {
         FILE* fp = nullptr;
         #ifdef _MSC_VER
         fopen_s(&fp, path.c_str(), "rb");
@@ -190,7 +190,7 @@ namespace utils {
             return nullptr;
         }
 
-        Buffer* buf = new Buffer(sz);
+        Buffer* buf = new Buffer(sz + (isTextFile ? 1 : 0));
         if (fread(buf->data(), sz, 1, fp) != 1) {
             fclose(fp);
             delete buf;
@@ -198,6 +198,8 @@ namespace utils {
         }
 
         buf->m_used = buf->m_capacity;
+
+        if (isTextFile) buf->m_data[sz] = 0;
 
         fclose(fp);
         return buf;
