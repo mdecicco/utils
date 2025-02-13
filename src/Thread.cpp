@@ -4,6 +4,8 @@
 
 #ifdef _WIN32
     #include <Windows.h>
+#elif defined(__linux__)
+    #include <sys/prctl.h>
 #endif
 
 namespace utils {
@@ -28,6 +30,22 @@ namespace utils {
         return std::hash<std::thread::id>{}(m_thread.get_id());
     }
 
+    void Thread::setName(const char* name) {
+        #ifdef __MINGW32__
+            // For some insane reason, my mingw setup has zero APIs for this.
+            abort();
+        #elif _WIN32
+            wchar_t buf[256] = { 0 };
+            if (MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, name, -1, buf, 256) > 0) {
+                SetThreadDescription(static_cast<HANDLE>(m_thread.native_handle()), buf);
+            }
+        #elif defined(__linux__)
+            abort();
+        #else
+            pthread_setname_np(m_thread.native_handle(), name);
+        #endif
+    }
+
     void Thread::reset(const std::function<void()>& entry) {
         if (m_thread.joinable() && isRunning()) m_thread.join();
         m_thread = std::thread([this, entry](){
@@ -48,7 +66,10 @@ namespace utils {
             return;
         }
 
-        #ifdef _WIN32
+        #ifdef __MINGW32__
+            // For some insane reason, my mingw setup has zero APIs for this.
+            abort();
+        #elif _WIN32
         HANDLE thread = (HANDLE)m_thread.native_handle();
         DWORD_PTR r = SetThreadAffinityMask(thread, DWORD_PTR(1) << cpuIdx);
         if (r == 0) {
@@ -104,10 +125,13 @@ namespace utils {
     }
 
     u32 Thread::CurrentCpuIndex() {
-        #ifdef _WIN32
-        return GetCurrentProcessorNumber();
+        #ifdef __MINGW32__
+            // For some insane reason, my mingw setup has zero APIs for this.
+            abort();
+        #elif _WIN32
+            return GetCurrentProcessorNumber();
         #else
-        return 0;
+            return 0;
         #endif
     }
 

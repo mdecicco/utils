@@ -136,7 +136,7 @@ namespace utils {
     }
 
     template <typename T>
-    FixedAllocator<T>::~FixedAllocator<T>() {
+    FixedAllocator<T>::~FixedAllocator() {
         delete [] m_memBase;
         m_memBase = m_nodeBase = nullptr;
         m_freeList = m_memList = nullptr;
@@ -325,7 +325,7 @@ namespace utils {
     }
 
     template <typename T, typename PageAllocatorTp>
-    PagedAllocator<T, PageAllocatorTp>::~PagedAllocator<T, PageAllocatorTp>() {
+    PagedAllocator<T, PageAllocatorTp>::~PagedAllocator() {
         page_node* n = m_pages;
         while (n) {
             delete n->allocator;
@@ -431,7 +431,7 @@ namespace utils {
     }
 
     template <typename T, typename AllocatorTp>
-    PerThreadSingletonAllocator<T, AllocatorTp>::~PerThreadSingletonAllocator<T, AllocatorTp>() {
+    PerThreadSingletonAllocator<T, AllocatorTp>::~PerThreadSingletonAllocator() {
     }
 
     template <typename T, typename AllocatorTp>

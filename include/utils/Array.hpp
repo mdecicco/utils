@@ -112,7 +112,7 @@ namespace utils {
     }
 
     template <typename T>
-    ArrayView<T>::~ArrayView<T>() {
+    ArrayView<T>::~ArrayView() {
     }
 
     template <typename T>
@@ -466,7 +466,7 @@ namespace utils {
     }
 
     template <typename T>
-    Array<T>::~Array<T>() {
+    Array<T>::~Array() {
         if (m_data) Mem::free(m_data);
         m_data = nullptr;
     }

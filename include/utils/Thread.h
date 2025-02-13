@@ -16,6 +16,7 @@ namespace utils {
             ~Thread();
 
             thread_id getId() const;
+            void setName(const char* name);
             void reset(const std::function<void()>& entry);
             void setAffinity(u32 cpuIdx);
             void waitForExit();
